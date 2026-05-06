@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Health Tracker">
+<meta name="theme-color" content="#110d14">
+<title>Lex's Health Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#110d14;--surface:#1c1520;--card:#261d2b;--border:#3d2d47;
+  --burgundy:#8b2a42;--rose:#c4556a;--gold:#c9a84c;--cream:#f0e6d3;
+  --muted:#8a7a88;--green:#4a7c59;--green-light:#6aaa7a;
+  --orange:#c87941;--blue:#3a6a8b;--purple:#6b3a8b;
+  --red:#a03030;--spike:#e05050;--teal:#2a7a7a;--psori:#8b5a2b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--cream);font-family:'DM Sans',sans-serif;min-height:100vh;padding-bottom:80px;}
+
+header{background:linear-gradient(135deg,#2a1530,#110d14);border-bottom:2px solid var(--burgundy);padding:14px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 4px 24px rgba(0,0,0,0.6);}
+header h1{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);}
+header h1 span{color:var(--gold);font-style:italic;}
+.header-sub{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+
+.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;position:sticky;top:64px;z-index:99;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:0 0 auto;padding:11px 12px;font-family:'DM Sans',sans-serif;font-size:0.68rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;}
+.tab-btn.active{color:var(--cream);border-bottom-color:var(--burgundy);}
+.tab-panel{display:none;padding:16px;}
+.tab-panel.active{display:block;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+.card-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold);margin-bottom:14px;}
+
+label{display:block;font-size:0.75rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;margin-top:12px;}
+label:first-of-type{margin-top:0;}
+input[type="text"],input[type="number"],input[type="datetime-local"],input[type="time"],select,textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:10px 12px;outline:none;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--burgundy);}
+select option{background:var(--card);}
+textarea{resize:vertical;min-height:70px;}
+
+.pain-scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.pain-btn{width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--cream);font-weight:600;font-size:0.9rem;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.pain-btn.selected{background:var(--burgundy);border-color:var(--rose);}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.78rem;font-weight:500;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.chip.selected{background:var(--burgundy);border-color:var(--rose);color:var(--cream);}
+
+.body-sections{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.body-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.body-section-name{font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:7px;}
+.lr-buttons{display:flex;gap:5px;}
+.lr-btn{flex:1;padding:6px 4px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.lr-btn.selected{background:var(--burgundy);border-color:var(--rose);color:var(--cream);}
+
+.mood-row{display:flex;gap:8px;margin-top:4px;}
+.mood-btn{flex:1;padding:10px 6px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:1.2rem;cursor:pointer;transition:all 0.15s;text-align:center;}
+.mood-btn.selected{background:var(--card);border-color:var(--gold);}
+.mood-label{display:block;font-size:0.6rem;font-family:'DM Sans',sans-serif;margin-top:3px;text-transform:uppercase;letter-spacing:0.04em;}
+
+.voice-btn{width:100%;padding:12px;border-radius:8px;border:1px dashed var(--border);background:var(--surface);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.85rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;}
+.voice-btn.recording{border-color:var(--rose);color:var(--rose);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.voice-transcript{margin-top:8px;padding:10px;background:var(--surface);border-radius:8px;font-size:0.82rem;color:var(--cream);display:none;border:1px solid var(--border);}
+
+.submit-btn{width:100%;padding:14px;background:var(--burgundy);color:var(--cream);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:4px;letter-spacing:0.03em;}
+.submit-btn:hover{background:var(--rose);}
+.submit-btn.secondary{background:var(--surface);border:1px solid var(--border);color:var(--cream);margin-top:8px;}
+.submit-btn.secondary:hover{border-color:var(--rose);}
+.submit-btn.green{background:var(--green);}
+.submit-btn.green:hover{background:var(--green-light);}
+
+.bpm-display{text-align:center;padding:16px;background:var(--surface);border-radius:10px;margin-bottom:12px;border:1px solid var(--border);}
+.bpm-number{font-family:'Playfair Display',serif;font-size:3rem;color:var(--cream);line-height:1;}
+.bpm-number.spike{color:var(--spike);}
+.bpm-unit{font-size:0.8rem;color:var(--muted);margin-top:4px;}
+.spike-warning{background:rgba(224,80,80,0.15);border:1px solid var(--spike);border-radius:8px;padding:10px 14px;font-size:0.82rem;color:var(--spike);margin-top:8px;display:none;align-items:center;gap:8px;}
+
+.history-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.filter-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.filter-btn.active{background:var(--burgundy);border-color:var(--rose);color:var(--cream);}
+
+.history-entry{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:10px;border-left:3px solid var(--burgundy);}
+.history-entry.hr{border-left-color:var(--blue);}
+.history-entry.symptom{border-left-color:var(--purple);}
+.history-entry.medreaction{border-left-color:var(--orange);}
+.history-entry.painmed{border-left-color:var(--red);}
+.history-entry.therapy{border-left-color:var(--teal);}
+.history-entry.food{border-left-color:var(--green);}
+.history-entry.psoriasis{border-left-color:var(--psori);}
+.history-entry.medlog{border-left-color:var(--blue-light,#5aabdd);}
+.entry-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.entry-type{font-size:0.68rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);}
+.entry-time{font-size:0.72rem;color:var(--muted);}
+.entry-main{font-size:0.88rem;color:var(--cream);margin-bottom:4px;}
+.entry-detail{font-size:0.78rem;color:var(--muted);}
+.entry-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;border-radius:4px;transition:color 0.15s;}
+.entry-delete:hover{color:var(--red);}
+
+.export-preview{background:#1a1a1a;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:0.8rem;line-height:1.7;color:#ddd;white-space:pre-wrap;max-height:400px;overflow-y:auto;font-family:'Courier New',monospace;margin-bottom:12px;}
+.export-btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:8px;}
+.export-copy{background:var(--burgundy);color:var(--cream);}
+.export-copy:hover{background:var(--rose);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:0.85rem;}
+.empty-state .icon{font-size:2rem;margin-bottom:10px;}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:white;padding:10px 20px;border-radius:20px;font-size:0.82rem;font-weight:600;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.backdate-toggle{display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:0.78rem;color:var(--muted);}
+.backdate-toggle input{width:auto;}
+.backdate-field{display:none;margin-top:8px;}
+.backdate-field.visible{display:block;}
+.section-divider{height:1px;background:var(--border);margin:14px 0;}
+
+/* MED LIST */
+.med-list-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+.med-list-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.med-list-info{flex:1;}
+.med-list-name{font-weight:600;font-size:0.9rem;color:var(--cream);}
+.med-list-detail{font-size:0.78rem;color:var(--muted);margin-top:3px;}
+.med-list-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.med-action-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.med-action-btn:hover{border-color:var(--rose);color:var(--rose);}
+.med-action-btn.take{background:var(--green);border-color:var(--green);color:white;}
+.med-action-btn.take:hover{background:var(--green-light);}
+.med-taken-time{font-size:0.72rem;color:var(--green-light);margin-top:4px;}
+
+/* PT EXERCISES */
+.exercise-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+.exercise-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);background:transparent;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all 0.15s;}
+.exercise-check.done{background:var(--teal);border-color:var(--teal);color:white;}
+.exercise-name{flex:1;font-size:0.88rem;color:var(--cream);}
+.exercise-reps{font-size:0.75rem;color:var(--muted);white-space:nowrap;}
+.exercise-delete{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.8rem;padding:2px 6px;}
+.exercise-delete:hover{color:var(--red);}
+.add-row{display:flex;gap:8px;margin-top:8px;}
+.add-row input{flex:1;}
+.add-btn{padding:10px 14px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;}
+.add-btn.teal{background:var(--teal);color:white;}
+.add-btn.burgundy{background:var(--burgundy);color:white;}
+
+/* TRENDS */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 8px;text-align:center;}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--cream);}
+.stat-val.good{color:var(--green-light);}
+.stat-val.warn{color:var(--orange);}
+.stat-val.bad{color:var(--spike);}
+.stat-label{font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-top:4px;}
+.trend-title{font-size:0.85rem;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.04em;}
+.simple-chart{display:flex;align-items:flex-end;gap:3px;height:80px;padding-bottom:22px;position:relative;overflow-x:auto;}
+.chart-bar{flex:0 0 auto;min-width:20px;border-radius:4px 4px 0 0;position:relative;transition:all 0.3s;}
+.chart-bar-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:0.55rem;color:var(--muted);white-space:nowrap;}
+.chart-bar-val{position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:0.58rem;color:var(--cream);}
+.freq-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.freq-name{font-size:0.8rem;color:var(--cream);width:130px;flex-shrink:0;}
+.freq-bar-wrap{flex:1;height:10px;background:var(--surface);border-radius:5px;overflow:hidden;}
+.freq-bar-fill{height:100%;border-radius:5px;transition:width 0.5s;}
+.freq-count{font-size:0.72rem;color:var(--muted);white-space:nowrap;}
+
+/* PSORIASIS */
+.flare-status{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+.status-btn{flex:1;min-width:80px;padding:10px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.75rem;font-weight:600;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.status-btn.better.selected{background:rgba(74,124,89,0.3);border-color:var(--green);color:var(--green-light);}
+.status-btn.same.selected{background:rgba(201,168,76,0.2);border-color:var(--gold);color:var(--gold);}
+.status-btn.worse.selected{background:rgba(224,80,80,0.2);border-color:var(--spike);color:var(--spike);}
+.status-btn.cleared.selected{background:rgba(74,124,89,0.5);border-color:var(--green-light);color:var(--green-light);}
+
+.active-flares{margin-bottom:14px;}
+.flare-card{background:var(--surface);border:1px solid var(--psori);border-radius:10px;padding:12px;margin-bottom:10px;border-left:3px solid var(--psori);}
+.flare-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.flare-card-name{font-weight:600;font-size:0.88rem;color:var(--cream);}
+.flare-card-date{font-size:0.72rem;color:var(--muted);}
+.flare-card-status{font-size:0.75rem;padding:3px 10px;border-radius:10px;border:1px solid var(--border);}
+.flare-update-btn{width:100%;padding:8px;border-radius:8px;border:1px solid var(--psori);background:transparent;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;margin-top:8px;transition:all 0.15s;}
+.flare-update-btn:hover{background:rgba(139,90,43,0.2);}
+
+/* FOOD LOG */
+.reaction-scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.reaction-btn{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.reaction-btn.none.selected{background:rgba(74,124,89,0.3);border-color:var(--green);color:var(--green-light);}
+.reaction-btn.mild.selected{background:rgba(201,168,76,0.2);border-color:var(--gold);color:var(--gold);}
+.reaction-btn.moderate.selected{background:rgba(200,121,65,0.2);border-color:var(--orange);color:var(--orange);}
+.reaction-btn.severe.selected{background:rgba(224,80,80,0.2);border-color:var(--spike);color:var(--spike);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Lex's <span>Health</span> Tracker</h1>
+  <div class="header-sub">Your data. Your patterns. Your power.</div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('pain',this)">🩸 Pain</button>
+  <button class="tab-btn" onclick="showTab('heartrate',this)">❤️ Heart Rate</button>
+  <button class="tab-btn" onclick="showTab('symptoms',this)">🔍 Symptoms</button>
+  <button class="tab-btn" onclick="showTab('medications',this)">💊 Meds</button>
+  <button class="tab-btn" onclick="showTab('painmed',this)">⚠️ Pain Meds</button>
+  <button class="tab-btn" onclick="showTab('medreaction',this)">🚨 Med Reactions</button>
+  <button class="tab-btn" onclick="showTab('therapy',this)">🛁 Therapy</button>
+  <button class="tab-btn" onclick="showTab('food',this)">🍽️ Food Log</button>
+  <button class="tab-btn" onclick="showTab('psoriasis',this)">🔴 Psoriasis</button>
+  <button class="tab-btn" onclick="showTab('trends',this)">📈 Trends</button>
+  <button class="tab-btn" onclick="showTab('history',this)">📋 History</button>
+  <button class="tab-btn" onclick="showTab('export',this)">📄 Export</button>
+</div>
+
+<!-- ═══════════════ PAIN LOG ═══════════════ -->
+<div id="tab-pain" class="tab-panel active">
+  <div class="card">
+    <div class="card-title">🩸 Pain Log Entry</div>
+    <label>Pain Scale (1–10)</label>
+    <div class="pain-scale">
+      <button class="pain-btn" onclick="selectPain(this,1)">1</button>
+      <button class="pain-btn" onclick="selectPain(this,2)">2</button>
+      <button class="pain-btn" onclick="selectPain(this,3)">3</button>
+      <button class="pain-btn" onclick="selectPain(this,4)">4</button>
+      <button class="pain-btn" onclick="selectPain(this,5)">5</button>
+      <button class="pain-btn" onclick="selectPain(this,6)">6</button>
+      <button class="pain-btn" onclick="selectPain(this,7)">7</button>
+      <button class="pain-btn" onclick="selectPain(this,8)">8</button>
+      <button class="pain-btn" onclick="selectPain(this,9)">9</button>
+      <button class="pain-btn" onclick="selectPain(this,10)">10</button>
+    </div>
+    <label>Body Location</label>
+    <div class="body-sections" id="bodyMap">
+      <div class="body-section"><div class="body-section-name">Head/Neck</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'head','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'head','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'head','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Shoulder</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'shoulder','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'shoulder','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'shoulder','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Chest</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'chest','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'chest','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'chest','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Upper Back</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'upperback','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'upperback','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'upperback','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Abdomen</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'abdomen','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'abdomen','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'abdomen','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Lower Back</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'lowerback','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'lowerback','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'lowerback','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Hip/Pelvis</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'hip','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'hip','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'hip','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Knee</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'knee','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'knee','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'knee','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Foot/Ankle</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'foot','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'foot','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'foot','R')">R</button></div></div>
+      <div class="body-section"><div class="body-section-name">Hand/Wrist</div><div class="lr-buttons"><button class="lr-btn" onclick="toggleLR(this,'hand','L')">L</button><button class="lr-btn" onclick="toggleLR(this,'hand','C')">C</button><button class="lr-btn" onclick="toggleLR(this,'hand','R')">R</button></div></div>
+    </div>
+    <label>Symptom Types</label>
+    <div class="chips" id="painSymptoms">
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Joint pain</button>
+      <button class="chip" onclick="toggleChip(this)">Muscle pain</button>
+      <button class="chip" onclick="toggleChip(this)">Numbness/tingling</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="painSymptomsCustom" placeholder="Other symptoms..." style="margin-top:8px;">
+    <label>Activity at Time of Pain</label>
+    <select id="painActivity"><option value="">Select activity...</option><option>Resting</option><option>Sitting</option><option>Standing</option><option>Walking</option><option>Household tasks</option><option>PT exercises</option><option>Climbing stairs</option><option>Driving</option><option>Sleeping/waking</option><option>Other</option></select>
+    <label>Mood</label>
+    <div class="mood-row" id="painMoodRow">
+      <button class="mood-btn" onclick="selectMood(this,'😊','pain')">😊<span class="mood-label">Good</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😐','pain')">😐<span class="mood-label">Okay</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😔','pain')">😔<span class="mood-label">Low</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😤','pain')">😤<span class="mood-label">Frustrated</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😰','pain')">😰<span class="mood-label">Anxious</span></button>
+    </div>
+    <label>Voice Note</label>
+    <button class="voice-btn" id="painVoiceBtn" onclick="toggleVoice('pain')">🎙️ Tap to Record</button>
+    <div class="voice-transcript" id="painTranscript"></div>
+    <label>Notes</label>
+    <textarea id="painNotes" placeholder="Any additional details..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="painBackdate" onchange="toggleBackdate('pain')"> Log for a past date/time</label>
+    <div class="backdate-field" id="painBackdateField"><input type="datetime-local" id="painBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="savePain()">💾 Save Pain Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ HEART RATE ═══════════════ -->
+<div id="tab-heartrate" class="tab-panel">
+  <div class="card">
+    <div class="card-title">❤️ Heart Rate Entry</div>
+    <label>BPM Reading</label>
+    <div class="bpm-display">
+      <div class="bpm-number" id="bpmDisplay">—</div>
+      <div class="bpm-unit">beats per minute</div>
+      <div class="spike-warning" id="spikeWarning">🚩 Spike detected — above threshold</div>
+    </div>
+    <input type="number" id="bpmInput" placeholder="Enter BPM..." min="30" max="250" oninput="updateBPMDisplay(this.value)">
+    <label>Spike Threshold (BPM)</label>
+    <input type="number" id="bpmThreshold" value="100" min="60" max="200">
+    <label>Activity</label>
+    <select id="hrActivity"><option value="">Select activity...</option><option>Resting</option><option>Sitting</option><option>Standing</option><option>Walking</option><option>Household tasks</option><option>PT exercises</option><option>Climbing stairs</option><option>Driving</option><option>Just woke up</option><option>Other</option></select>
+    <input type="text" id="hrActivityCustom" placeholder="Describe if Other..." style="margin-top:8px;">
+    <label>Exertion Level</label>
+    <div class="chips" id="hrExertion">
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">💤 None</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🚶 Light</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🏃 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🔥 Intense</button>
+    </div>
+    <label>Notes</label>
+    <textarea id="hrNotes" placeholder="How did you feel? Dizzy, short of breath, etc..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="hrBackdate" onchange="toggleBackdate('hr')"> Log for a past date/time</label>
+    <div class="backdate-field" id="hrBackdateField"><input type="datetime-local" id="hrBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveHR()">💾 Save Heart Rate Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ SYMPTOMS ═══════════════ -->
+<div id="tab-symptoms" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🔍 Symptom Log</div>
+    <label>Symptoms (select all that apply)</label>
+    <div class="chips" id="symptomChips">
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Joint pain</button>
+      <button class="chip" onclick="toggleChip(this)">Muscle pain</button>
+      <button class="chip" onclick="toggleChip(this)">Numbness/tingling</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="symptomCustom" placeholder="Other symptoms not listed..." style="margin-top:8px;">
+    <label>Severity</label>
+    <div class="chips" id="symptomSeverity">
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😌 Mild</button>
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😣 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😫 Severe</button>
+    </div>
+    <label>Duration</label>
+    <select id="symptomDuration"><option value="">Select duration...</option><option>Just started</option><option>Less than 1 hour</option><option>1–3 hours</option><option>Half a day</option><option>All day</option><option>Multiple days</option></select>
+    <label>Notes</label>
+    <textarea id="symptomNotes" placeholder="Any triggers, patterns, or context..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="symptomBackdate" onchange="toggleBackdate('symptom')"> Log for a past date/time</label>
+    <div class="backdate-field" id="symptomBackdateField"><input type="datetime-local" id="symptomBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveSymptom()">💾 Save Symptom Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MEDICATIONS ═══════════════ -->
+<div id="tab-medications" class="tab-panel">
+  <div class="card">
+    <div class="card-title">💊 My Medications</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">Your medication list. Tap "Took It" to log a dose.</p>
+    <div id="medListDisplay"></div>
+    <div class="section-divider"></div>
+    <div class="card-title" style="font-size:0.9rem;">➕ Add Medication</div>
+    <label>Medication Name</label>
+    <input type="text" id="newMedName" placeholder="e.g. Gabapentin">
+    <label>Dosage</label>
+    <input type="text" id="newMedDose" placeholder="e.g. 300mg">
+    <label>Scheduled Time(s)</label>
+    <input type="text" id="newMedTimes" placeholder="e.g. 8am, 2pm, 8pm">
+    <label>Notes</label>
+    <input type="text" id="newMedNotes" placeholder="With food, as needed, etc.">
+    <button class="submit-btn green" style="margin-top:12px;" onclick="addMedication()">➕ Add to Medication List</button>
+  </div>
+</div>
+
+<!-- ═══════════════ PAIN MEDS ═══════════════ -->
+<div id="tab-painmed" class="tab-panel">
+  <div class="card">
+    <div class="card-title">⚠️ Pain Medication Log</div>
+    <label>Medication Taken</label>
+    <input type="text" id="pmMed" placeholder="e.g. Ibuprofen, Tramadol...">
+    <label>Dosage</label>
+    <input type="text" id="pmDose" placeholder="e.g. 400mg, 1 tablet...">
+    <label>Why Did You Take It?</label>
+    <div class="chips" id="pmReason">
+      <button class="chip" onclick="toggleChip(this)">Acute pain flare</button>
+      <button class="chip" onclick="toggleChip(this)">Chronic baseline pain</button>
+      <button class="chip" onclick="toggleChip(this)">Headache/migraine</button>
+      <button class="chip" onclick="toggleChip(this)">Post-PT soreness</button>
+      <button class="chip" onclick="toggleChip(this)">Sleep aid</button>
+      <button class="chip" onclick="toggleChip(this)">Inflammation</button>
+    </div>
+    <input type="text" id="pmReasonCustom" placeholder="Other reason..." style="margin-top:8px;">
+    <label>Pain Level Before</label>
+    <div class="pain-scale" id="pmPainBefore">
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',1)">1</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',2)">2</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',3)">3</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',4)">4</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',5)">5</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',6)">6</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',7)">7</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',8)">8</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',9)">9</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainBefore',10)">10</button>
+    </div>
+    <label>Did It Help?</label>
+    <div class="chips" id="pmHelped">
+      <button class="chip" onclick="selectSingle(this,'pmHelped')">✅ Yes, significantly</button>
+      <button class="chip" onclick="selectSingle(this,'pmHelped')">🔸 Somewhat</button>
+      <button class="chip" onclick="selectSingle(this,'pmHelped')">❌ No relief</button>
+      <button class="chip" onclick="selectSingle(this,'pmHelped')">⏳ Too early to tell</button>
+    </div>
+    <label>Pain Level After</label>
+    <div class="pain-scale" id="pmPainAfter">
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',1)">1</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',2)">2</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',3)">3</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',4)">4</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',5)">5</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',6)">6</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',7)">7</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',8)">8</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',9)">9</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'pmPainAfter',10)">10</button>
+    </div>
+    <label>How Long Until Relief?</label>
+    <select id="pmRelief"><option value="">Select...</option><option>Within 15 min</option><option>15–30 min</option><option>30–60 min</option><option>1–2 hours</option><option>2+ hours</option><option>No relief</option></select>
+    <label>Side Effects</label>
+    <div class="chips" id="pmSideEffects">
+      <button class="chip" onclick="toggleChip(this)">Drowsiness</button>
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Stomach upset</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">None</button>
+    </div>
+    <label>Notes</label>
+    <textarea id="pmNotes" placeholder="Anything else worth noting..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="pmBackdate" onchange="toggleBackdate('pm')"> Log for a past date/time</label>
+    <div class="backdate-field" id="pmBackdateField"><input type="datetime-local" id="pmBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="savePainMed()">💾 Save Pain Med Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ MED REACTIONS ═══════════════ -->
+<div id="tab-medreaction" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🚨 Medication Reaction Log</div>
+    <label>Medication Name</label>
+    <input type="text" id="mrMed" placeholder="e.g. Gabapentin, Ibuprofen...">
+    <label>Dosage Taken</label>
+    <input type="text" id="mrDose" placeholder="e.g. 300mg, 2 tablets...">
+    <label>Reaction Type</label>
+    <div class="chips" id="mrReactions">
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Rash/Hives</button>
+      <button class="chip" onclick="toggleChip(this)">Drowsiness</button>
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Heart racing</button>
+      <button class="chip" onclick="toggleChip(this)">Stomach upset</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Mood change</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="mrReactionCustom" placeholder="Other reaction..." style="margin-top:8px;">
+    <label>Severity</label>
+    <div class="chips" id="mrSeverity">
+      <button class="chip" onclick="selectSingle(this,'mrSeverity')">😌 Mild</button>
+      <button class="chip" onclick="selectSingle(this,'mrSeverity')">😣 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'mrSeverity')">😫 Severe</button>
+    </div>
+    <label>Onset After Taking</label>
+    <select id="mrDelay"><option value="">Select...</option><option>Immediately</option><option>Within 15 min</option><option>15–30 min</option><option>30–60 min</option><option>1–2 hours</option><option>2+ hours</option></select>
+    <label>Notes</label>
+    <textarea id="mrNotes" placeholder="Context, how long it lasted, what helped..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="mrBackdate" onchange="toggleBackdate('mr')"> Log for a past date/time</label>
+    <div class="backdate-field" id="mrBackdateField"><input type="datetime-local" id="mrBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveMedReaction()">💾 Save Reaction Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ THERAPY ═══════════════ -->
+<div id="tab-therapy" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🛁 Therapy Session Log</div>
+    <label>Therapy Type</label>
+    <div class="chips" id="therapyType">
+      <button class="chip" onclick="toggleChip(this)">PT session</button>
+      <button class="chip" onclick="toggleChip(this)">Massage</button>
+      <button class="chip" onclick="toggleChip(this)">Hot tub/jacuzzi</button>
+      <button class="chip" onclick="toggleChip(this)">Heat therapy</button>
+      <button class="chip" onclick="toggleChip(this)">Ice/cold therapy</button>
+      <button class="chip" onclick="toggleChip(this)">Stretching</button>
+      <button class="chip" onclick="toggleChip(this)">TENS unit</button>
+      <button class="chip" onclick="toggleChip(this)">Rest</button>
+    </div>
+    <input type="text" id="therapyTypeCustom" placeholder="Other therapy type..." style="margin-top:8px;">
+    <label>Duration (minutes)</label>
+    <input type="number" id="therapyDuration" placeholder="e.g. 30" min="1" max="300">
+    <label>Pain Level Before</label>
+    <div class="pain-scale" id="therapyBefore">
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',1)">1</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',2)">2</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',3)">3</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',4)">4</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',5)">5</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',6)">6</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',7)">7</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',8)">8</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',9)">9</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyBefore',10)">10</button>
+    </div>
+    <label>Pain Level After</label>
+    <div class="pain-scale" id="therapyAfter">
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',1)">1</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',2)">2</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',3)">3</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',4)">4</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',5)">5</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',6)">6</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',7)">7</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',8)">8</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',9)">9</button>
+      <button class="pain-btn" onclick="selectPainGroup(this,'therapyAfter',10)">10</button>
+    </div>
+    <label>Notes</label>
+    <textarea id="therapyNotes" placeholder="How did you feel? What worked? What didn't?"></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="therapyBackdate" onchange="toggleBackdate('therapy')"> Log for a past date/time</label>
+    <div class="backdate-field" id="therapyBackdateField"><input type="datetime-local" id="therapyBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveTherapy()">💾 Save Therapy Session</button>
+  </div>
+  <div class="card">
+    <div class="card-title">🏋️ PT Exercise Checklist</div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:12px;">Add your prescribed exercises. Check them off as you do them daily.</p>
+    <div id="exerciseList"></div>
+    <div class="add-row">
+      <input type="text" id="newExerciseName" placeholder="Exercise name...">
+      <input type="text" id="newExerciseReps" placeholder="Sets/reps" style="max-width:100px;">
+      <button class="add-btn teal" onclick="addExercise()">Add</button>
+    </div>
+    <div class="section-divider"></div>
+    <button class="submit-btn secondary" onclick="resetExercises()">↺ Reset All Checkboxes</button>
+    <button class="submit-btn green" onclick="saveExerciseLog()">💾 Log Today's Exercise Completion</button>
+  </div>
+</div>
+
+<!-- ═══════════════ FOOD LOG ═══════════════ -->
+<div id="tab-food" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🍽️ Food Log Entry</div>
+    <label>What Did You Eat/Drink?</label>
+    <textarea id="foodWhat" placeholder="List foods, drinks, supplements..."></textarea>
+    <label>Meal Type</label>
+    <div class="chips" id="foodMeal">
+      <button class="chip" onclick="selectSingle(this,'foodMeal')">☀️ Breakfast</button>
+      <button class="chip" onclick="selectSingle(this,'foodMeal')">🌤️ Lunch</button>
+      <button class="chip" onclick="selectSingle(this,'foodMeal')">🌙 Dinner</button>
+      <button class="chip" onclick="selectSingle(this,'foodMeal')">🍎 Snack</button>
+      <button class="chip" onclick="selectSingle(this,'foodMeal')">💊 Supplement</button>
+    </div>
+    <label>Any Symptoms After? (within 2 hours)</label>
+    <div class="chips" id="foodSymptoms">
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Bloating</button>
+      <button class="chip" onclick="toggleChip(this)">Stomach pain</button>
+      <button class="chip" onclick="toggleChip(this)">Heartburn</button>
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+      <button class="chip" onclick="toggleChip(this)">Skin reaction</button>
+      <button class="chip" onclick="toggleChip(this)">Joint flare</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">None</button>
+    </div>
+    <label>Reaction Severity</label>
+    <div class="reaction-scale">
+      <button class="reaction-btn none" onclick="selectReaction(this,'none')">✅ None</button>
+      <button class="reaction-btn mild" onclick="selectReaction(this,'mild')">🟡 Mild</button>
+      <button class="reaction-btn moderate" onclick="selectReaction(this,'moderate')">🟠 Moderate</button>
+      <button class="reaction-btn severe" onclick="selectReaction(this,'severe')">🔴 Severe</button>
+    </div>
+    <label>Notes</label>
+    <textarea id="foodNotes" placeholder="Anything else — brand, preparation method, how much..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="foodBackdate" onchange="toggleBackdate('food')"> Log for a past date/time</label>
+    <div class="backdate-field" id="foodBackdateField"><input type="datetime-local" id="foodBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveFood()">💾 Save Food Entry</button>
+  </div>
+</div>
+
+<!-- ═══════════════ PSORIASIS ═══════════════ -->
+<div id="tab-psoriasis" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🔴 Active Flares</div>
+    <div id="activeFlaresDisplay"></div>
+    <p id="noFlares" style="font-size:0.82rem;color:var(--muted);display:none;">No active flares logged. Log a new flare below.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">➕ Log New Flare</div>
+    <label>Flare Location (body area)</label>
+    <input type="text" id="psoriLocation" placeholder="e.g. Scalp, elbow, lower back...">
+    <label>Severity</label>
+    <div class="chips" id="psoriSeverity">
+      <button class="chip" onclick="selectSingle(this,'psoriSeverity')">😌 Mild</button>
+      <button class="chip" onclick="selectSingle(this,'psoriSeverity')">😣 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'psoriSeverity')">😫 Severe</button>
+    </div>
+    <label>Possible Triggers</label>
+    <div class="chips" id="psoriTriggers">
+      <button class="chip" onclick="toggleChip(this)">Stress</button>
+      <button class="chip" onclick="toggleChip(this)">Food</button>
+      <button class="chip" onclick="toggleChip(this)">Weather change</button>
+      <button class="chip" onclick="toggleChip(this)">Medication</button>
+      <button class="chip" onclick="toggleChip(this)">Skin injury</button>
+      <button class="chip" onclick="toggleChip(this)">Infection/illness</button>
+      <button class="chip" onclick="toggleChip(this)">Unknown</button>
+    </div>
+    <input type="text" id="psoriTriggerCustom" placeholder="Other trigger..." style="margin-top:8px;">
+    <label>Treatments Used</label>
+    <div class="chips" id="psoriTreatments">
+      <button class="chip" onclick="toggleChip(this)">Topical cream/ointment</button>
+      <button class="chip" onclick="toggleChip(this)">Moisturizing</button>
+      <button class="chip" onclick="toggleChip(this)">Diet changes</button>
+      <button class="chip" onclick="toggleChip(this)">Stress reduction</button>
+      <button class="chip" onclick="toggleChip(this)">Medication</button>
+    </div>
+    <input type="text" id="psoriTreatmentCustom" placeholder="Other treatment..." style="margin-top:8px;">
+    <label>Current Status</label>
+    <div class="flare-status" id="psoriStatus">
+      <button class="status-btn better" onclick="selectStatus(this,'better')">📈 Getting better</button>
+      <button class="status-btn same" onclick="selectStatus(this,'same')">➡️ No change</button>
+      <button class="status-btn worse" onclick="selectStatus(this,'worse')">📉 Getting worse</button>
+      <button class="status-btn cleared" onclick="selectStatus(this,'cleared')">✅ Cleared up</button>
+    </div>
+    <label>Notes</label>
+    <textarea id="psoriNotes" placeholder="Appearance, texture, itching level, what helped most..."></textarea>
+    <label class="backdate-toggle"><input type="checkbox" id="psoriBackdate" onchange="toggleBackdate('psori')"> Log for a past date/time</label>
+    <div class="backdate-field" id="psoriBackdateField"><input type="datetime-local" id="psoriBackdateTime"></div>
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="savePsoriasis()">💾 Log New Flare</button>
+  </div>
+</div>
+
+<!-- ═══════════════ TRENDS ═══════════════ -->
+<div id="tab-trends" class="tab-panel">
+  <div id="trendsContent"></div>
+</div>
+
+<!-- ═══════════════ HISTORY ═══════════════ -->
+<div id="tab-history" class="tab-panel">
+  <div class="history-filters">
+    <button class="filter-btn active" onclick="filterHistory('all',this)">All</button>
+    <button class="filter-btn" onclick="filterHistory('pain',this)">Pain</button>
+    <button class="filter-btn" onclick="filterHistory('hr',this)">Heart Rate</button>
+    <button class="filter-btn" onclick="filterHistory('symptom',this)">Symptoms</button>
+    <button class="filter-btn" onclick="filterHistory('medlog',this)">Meds Taken</button>
+    <button class="filter-btn" onclick="filterHistory('painmed',this)">Pain Meds</button>
+    <button class="filter-btn" onclick="filterHistory('medreaction',this)">Med Reactions</button>
+    <button class="filter-btn" onclick="filterHistory('therapy',this)">Therapy</button>
+    <button class="filter-btn" onclick="filterHistory('food',this)">Food</button>
+    <button class="filter-btn" onclick="filterHistory('psoriasis',this)">Psoriasis</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ═══════════════ EXPORT ═══════════════ -->
+<div id="tab-export" class="tab-panel">
+  <div class="card">
+    <div class="card-title">📄 Doctor Export</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">Clean summary of all your logged data, ready to copy and share.</p>
+    <label>Date Range</label>
+    <select id="exportRange" onchange="generateExport()">
+      <option value="7">Last 7 days</option>
+      <option value="14">Last 14 days</option>
+      <option value="30" selected>Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="all">All entries</option>
+    </select>
+    <div style="margin-top:14px;">
+      <div class="export-preview" id="exportPreview">Tap a range above to generate your report.</div>
+      <button class="export-btn export-copy" onclick="copyExport()">📋 Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PWA Install Banner -->
+<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--burgundy);padding:12px 16px;z-index:1000;display:none;align-items:center;gap:10px;">
+  <div style="flex:1;font-size:0.82rem;color:var(--cream);">📲 Add to your home screen for the best experience</div>
+  <button onclick="installApp()" style="padding:8px 14px;background:var(--burgundy);color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">Install</button>
+  <button onclick="document.getElementById('installBanner').style.display='none'" style="padding:8px;background:transparent;color:var(--muted);border:none;cursor:pointer;font-size:1rem;">✕</button>
+</div>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+const STORAGE_KEY = 'lexHealthV2';
+const MED_KEY = 'lexMedList';
+const EXERCISE_KEY = 'lexExercises';
+
+let painLevel = null;
+let painMood = null;
+let painLocations = {};
+let foodReaction = null;
+let psoriStatus = null;
+let painGroupVals = {};
+let voiceRecording = false;
+let recognition = null;
+let currentVoiceTarget = null;
+let voiceTranscripts = {pain:''};
+let currentHistoryFilter = 'all';
+
+function loadEntries(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{return[];}}
+function saveEntries(d){localStorage.setItem(STORAGE_KEY,JSON.stringify(d));}
+function loadMeds(){try{return JSON.parse(localStorage.getItem(MED_KEY))||[];}catch{return[];}}
+function saveMeds(d){localStorage.setItem(MED_KEY,JSON.stringify(d));}
+function loadExercises(){try{return JSON.parse(localStorage.getItem(EXERCISE_KEY))||[];}catch{return[];}}
+function saveExercises(d){localStorage.setItem(EXERCISE_KEY,JSON.stringify(d));}
+
+// ══════════════════════════════
+// NAVIGATION
+// ══════════════════════════════
+function showTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='history')renderHistory('all');
+  if(name==='export')generateExport();
+  if(name==='trends')renderTrends();
+  if(name==='medications')renderMedList();
+  if(name==='therapy')renderExercises();
+  if(name==='psoriasis')renderActiveFlares();
+}
+
+// ══════════════════════════════
+// SHARED UI HELPERS
+// ══════════════════════════════
+function selectPain(btn,val){
+  document.querySelectorAll('.pain-scale:not([id]) .pain-btn, #tab-pain .pain-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');painLevel=val;
+}
+function selectPainGroup(btn,groupId,val){
+  document.querySelectorAll('#'+groupId+' .pain-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');painGroupVals[groupId]=val;
+}
+function toggleLR(btn,region,side){
+  if(btn.classList.contains('selected')){
+    btn.classList.remove('selected');
+    if(painLocations[region])painLocations[region]=painLocations[region].filter(s=>s!==side);
+    if(painLocations[region]&&!painLocations[region].length)delete painLocations[region];
+  }else{
+    btn.classList.add('selected');
+    if(!painLocations[region])painLocations[region]=[];
+    if(!painLocations[region].includes(side))painLocations[region].push(side);
+  }
+}
+function toggleChip(btn){btn.classList.toggle('selected');}
+function selectSingle(btn,groupId){
+  document.querySelectorAll('#'+groupId+' .chip').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function selectMood(btn,emoji,key){
+  const row=btn.closest('.mood-row');
+  row.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');painMood=emoji;
+}
+function selectReaction(btn,val){
+  document.querySelectorAll('.reaction-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');foodReaction=val;
+}
+function selectStatus(btn,val){
+  document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');psoriStatus=val;
+}
+function toggleBackdate(prefix){
+  const cb=document.getElementById(prefix+'Backdate');
+  const field=document.getElementById(prefix+'BackdateField');
+  field.classList.toggle('visible',cb.checked);
+}
+function getTimestamp(prefix){
+  const cb=document.getElementById(prefix+'Backdate');
+  if(cb&&cb.checked){const v=document.getElementById(prefix+'BackdateTime').value;if(v)return new Date(v).toISOString();}
+  return new Date().toISOString();
+}
+function showToast(msg,color){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=color||'var(--green)';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);
+}
+function getChips(groupId){return[...document.querySelectorAll('#'+groupId+' .chip.selected')].map(c=>c.textContent);}
+
+// ══════════════════════════════
+// VOICE
+// ══════════════════════════════
+function toggleVoice(target){
+  if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){showToast('Voice not supported');return;}
+  if(voiceRecording&&currentVoiceTarget===target){recognition.stop();return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();recognition.continuous=true;recognition.interimResults=true;
+  currentVoiceTarget=target;
+  const btn=document.getElementById(target+'VoiceBtn');
+  const transcript=document.getElementById(target+'Transcript');
+  recognition.onstart=()=>{voiceRecording=true;btn.classList.add('recording');btn.textContent='⏹️ Recording... tap to stop';transcript.style.display='block';};
+  recognition.onresult=(e)=>{let text='';for(let i=0;i<e.results.length;i++)text+=e.results[i][0].transcript;transcript.textContent=text;voiceTranscripts[target]=text;};
+  recognition.onend=()=>{voiceRecording=false;btn.classList.remove('recording');btn.textContent='🎙️ Tap to Record';};
+  recognition.start();
+}
+
+// ══════════════════════════════
+// BPM
+// ══════════════════════════════
+function updateBPMDisplay(val){
+  const d=document.getElementById('bpmDisplay');
+  const w=document.getElementById('spikeWarning');
+  const threshold=parseInt(document.getElementById('bpmThreshold').value)||100;
+  if(!val){d.textContent='—';d.classList.remove('spike');w.style.display='none';return;}
+  d.textContent=val;
+  if(parseInt(val)>=threshold){d.classList.add('spike');w.style.display='flex';}
+  else{d.classList.remove('spike');w.style.display='none';}
+}
+
+// ══════════════════════════════
+// SAVE FUNCTIONS
+// ══════════════════════════════
+function savePain(){
+  const symptoms=getChips('painSymptoms');
+  const custom=document.getElementById('painSymptomsCustom').value;
+  if(custom)symptoms.push(custom);
+  const locations=Object.entries(painLocations).map(([r,s])=>r+' ('+s.join('/')+')');
+  const entry={id:Date.now(),type:'pain',timestamp:getTimestamp('pain'),painLevel,locations,symptoms,
+    activity:document.getElementById('painActivity').value,mood:painMood,
+    voiceNote:voiceTranscripts['pain']||'',notes:document.getElementById('painNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  // reset
+  document.querySelectorAll('#tab-pain .pain-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('#painSymptoms .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.lr-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('#painMoodRow .mood-btn').forEach(b=>b.classList.remove('selected'));
+  ['painSymptomsCustom','painNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('painActivity').value='';
+  document.getElementById('painTranscript').style.display='none';
+  document.getElementById('painBackdate').checked=false;
+  document.getElementById('painBackdateField').classList.remove('visible');
+  painLevel=null;painMood=null;painLocations={};voiceTranscripts['pain']='';
+  showToast('Pain entry saved ✓');
+}
+
+function saveHR(){
+  const bpm=parseInt(document.getElementById('bpmInput').value);
+  if(!bpm){showToast('Please enter a BPM reading','var(--orange)');return;}
+  const threshold=parseInt(document.getElementById('bpmThreshold').value)||100;
+  const entry={id:Date.now(),type:'hr',timestamp:getTimestamp('hr'),bpm,isSpike:bpm>=threshold,threshold,
+    activity:document.getElementById('hrActivity').value||document.getElementById('hrActivityCustom').value,
+    exertion:document.querySelector('#hrExertion .chip.selected')?.textContent||'',
+    notes:document.getElementById('hrNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.getElementById('bpmInput').value='';updateBPMDisplay('');
+  document.getElementById('hrActivity').value='';document.getElementById('hrActivityCustom').value='';
+  document.getElementById('hrNotes').value='';
+  document.querySelectorAll('#hrExertion .chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('hrBackdate').checked=false;document.getElementById('hrBackdateField').classList.remove('visible');
+  showToast('Heart rate saved ✓');
+}
+
+function saveSymptom(){
+  const symptoms=getChips('symptomChips');
+  const custom=document.getElementById('symptomCustom').value;if(custom)symptoms.push(custom);
+  if(!symptoms.length){showToast('Select at least one symptom','var(--orange)');return;}
+  const entry={id:Date.now(),type:'symptom',timestamp:getTimestamp('symptom'),symptoms,
+    severity:document.querySelector('#symptomSeverity .chip.selected')?.textContent||'',
+    duration:document.getElementById('symptomDuration').value,
+    notes:document.getElementById('symptomNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.querySelectorAll('#symptomChips .chip, #symptomSeverity .chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('symptomCustom').value='';document.getElementById('symptomDuration').value='';document.getElementById('symptomNotes').value='';
+  document.getElementById('symptomBackdate').checked=false;document.getElementById('symptomBackdateField').classList.remove('visible');
+  showToast('Symptom entry saved ✓');
+}
+
+function savePainMed(){
+  const name=document.getElementById('pmMed').value;
+  if(!name){showToast('Please enter a medication name','var(--orange)');return;}
+  const reasons=getChips('pmReason');const rc=document.getElementById('pmReasonCustom').value;if(rc)reasons.push(rc);
+  const se=getChips('pmSideEffects');
+  const entry={id:Date.now(),type:'painmed',timestamp:getTimestamp('pm'),
+    medName:name,dosage:document.getElementById('pmDose').value,reasons,
+    painBefore:painGroupVals['pmPainBefore']||null,painAfter:painGroupVals['pmPainAfter']||null,
+    helped:document.querySelector('#pmHelped .chip.selected')?.textContent||'',
+    relief:document.getElementById('pmRelief').value,sideEffects:se,
+    notes:document.getElementById('pmNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.getElementById('pmMed').value='';document.getElementById('pmDose').value='';
+  document.getElementById('pmReasonCustom').value='';document.getElementById('pmNotes').value='';
+  document.getElementById('pmRelief').value='';
+  document.querySelectorAll('#pmReason .chip,#pmHelped .chip,#pmSideEffects .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('#pmPainBefore .pain-btn,#pmPainAfter .pain-btn').forEach(b=>b.classList.remove('selected'));
+  delete painGroupVals['pmPainBefore'];delete painGroupVals['pmPainAfter'];
+  document.getElementById('pmBackdate').checked=false;document.getElementById('pmBackdateField').classList.remove('visible');
+  showToast('Pain med entry saved ✓');
+}
+
+function saveMedReaction(){
+  const name=document.getElementById('mrMed').value;
+  if(!name){showToast('Please enter a medication name','var(--orange)');return;}
+  const reactions=getChips('mrReactions');const rc=document.getElementById('mrReactionCustom').value;if(rc)reactions.push(rc);
+  const entry={id:Date.now(),type:'medreaction',timestamp:getTimestamp('mr'),
+    medName:name,dosage:document.getElementById('mrDose').value,reactions,
+    severity:document.querySelector('#mrSeverity .chip.selected')?.textContent||'',
+    delay:document.getElementById('mrDelay').value,
+    notes:document.getElementById('mrNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.getElementById('mrMed').value='';document.getElementById('mrDose').value='';
+  document.getElementById('mrReactionCustom').value='';document.getElementById('mrNotes').value='';
+  document.getElementById('mrDelay').value='';
+  document.querySelectorAll('#mrReactions .chip,#mrSeverity .chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('mrBackdate').checked=false;document.getElementById('mrBackdateField').classList.remove('visible');
+  showToast('Medication reaction saved ✓');
+}
+
+function saveTherapy(){
+  const types=getChips('therapyType');const tc=document.getElementById('therapyTypeCustom').value;if(tc)types.push(tc);
+  if(!types.length){showToast('Select a therapy type','var(--orange)');return;}
+  const entry={id:Date.now(),type:'therapy',timestamp:getTimestamp('therapy'),
+    therapyTypes:types,duration:document.getElementById('therapyDuration').value,
+    painBefore:painGroupVals['therapyBefore']||null,painAfter:painGroupVals['therapyAfter']||null,
+    notes:document.getElementById('therapyNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.querySelectorAll('#therapyType .chip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('therapyTypeCustom').value='';document.getElementById('therapyDuration').value='';
+  document.getElementById('therapyNotes').value='';
+  document.querySelectorAll('#therapyBefore .pain-btn,#therapyAfter .pain-btn').forEach(b=>b.classList.remove('selected'));
+  delete painGroupVals['therapyBefore'];delete painGroupVals['therapyAfter'];
+  document.getElementById('therapyBackdate').checked=false;document.getElementById('therapyBackdateField').classList.remove('visible');
+  showToast('Therapy session saved ✓');
+}
+
+function saveFood(){
+  const what=document.getElementById('foodWhat').value;
+  if(!what){showToast('Please enter what you ate','var(--orange)');return;}
+  const symptoms=getChips('foodSymptoms');
+  const entry={id:Date.now(),type:'food',timestamp:getTimestamp('food'),
+    food:what,meal:document.querySelector('#foodMeal .chip.selected')?.textContent||'',
+    symptoms,reaction:foodReaction,notes:document.getElementById('foodNotes').value};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.getElementById('foodWhat').value='';document.getElementById('foodNotes').value='';
+  document.querySelectorAll('#foodMeal .chip,#foodSymptoms .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.reaction-btn').forEach(b=>b.classList.remove('selected'));
+  foodReaction=null;
+  document.getElementById('foodBackdate').checked=false;document.getElementById('foodBackdateField').classList.remove('visible');
+  showToast('Food entry saved ✓');
+}
+
+function savePsoriasis(){
+  const location=document.getElementById('psoriLocation').value;
+  if(!location){showToast('Please enter flare location','var(--orange)');return;}
+  const triggers=getChips('psoriTriggers');const tc=document.getElementById('psoriTriggerCustom').value;if(tc)triggers.push(tc);
+  const treatments=getChips('psoriTreatments');const trc=document.getElementById('psoriTreatmentCustom').value;if(trc)treatments.push(trc);
+  const entry={id:Date.now(),type:'psoriasis',timestamp:getTimestamp('psori'),
+    location,severity:document.querySelector('#psoriSeverity .chip.selected')?.textContent||'',
+    triggers,treatments,status:psoriStatus,notes:document.getElementById('psoriNotes').value,
+    updates:[{timestamp:new Date().toISOString(),status:psoriStatus}]};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  document.getElementById('psoriLocation').value='';document.getElementById('psoriNotes').value='';
+  document.getElementById('psoriTriggerCustom').value='';document.getElementById('psoriTreatmentCustom').value='';
+  document.querySelectorAll('#psoriSeverity .chip,#psoriTriggers .chip,#psoriTreatments .chip').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('selected'));
+  psoriStatus=null;
+  document.getElementById('psoriBackdate').checked=false;document.getElementById('psoriBackdateField').classList.remove('visible');
+  renderActiveFlares();
+  showToast('Psoriasis flare logged ✓');
+}
+
+// ══════════════════════════════
+// MEDICATIONS
+// ══════════════════════════════
+function addMedication(){
+  const name=document.getElementById('newMedName').value.trim();
+  if(!name){showToast('Please enter a medication name','var(--orange)');return;}
+  const meds=loadMeds();
+  meds.push({id:Date.now(),name,dose:document.getElementById('newMedDose').value,
+    times:document.getElementById('newMedTimes').value,notes:document.getElementById('newMedNotes').value,takenTimes:[]});
+  saveMeds(meds);
+  document.getElementById('newMedName').value='';document.getElementById('newMedDose').value='';
+  document.getElementById('newMedTimes').value='';document.getElementById('newMedNotes').value='';
+  renderMedList();showToast('Medication added ✓');
+}
+
+function logMedTaken(id){
+  const meds=loadMeds();const med=meds.find(m=>m.id===id);if(!med)return;
+  const now=new Date().toISOString();if(!med.takenTimes)med.takenTimes=[];
+  med.takenTimes.push(now);saveMeds(meds);
+  // also save to entries
+  const entry={id:Date.now(),type:'medlog',timestamp:now,medName:med.name,dosage:med.dose,notes:'Scheduled dose taken'};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  renderMedList();showToast(med.name+' logged as taken ✓');
+}
+
+function deleteMed(id){
+  const meds=loadMeds().filter(m=>m.id!==id);saveMeds(meds);renderMedList();showToast('Medication removed');
+}
+
+function renderMedList(){
+  const meds=loadMeds();
+  const el=document.getElementById('medListDisplay');
+  if(!meds.length){el.innerHTML='<div class="empty-state"><div class="icon">💊</div>No medications added yet</div>';return;}
+  el.innerHTML=meds.map(m=>{
+    const lastTaken=m.takenTimes&&m.takenTimes.length?'Last taken: '+new Date(m.takenTimes[m.takenTimes.length-1]).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Not yet logged today';
+    return`<div class="med-list-item">
+      <div class="med-list-top">
+        <div class="med-list-info">
+          <div class="med-list-name">${m.name}${m.dose?' — '+m.dose:''}</div>
+          <div class="med-list-detail">${m.times?'⏰ '+m.times:''}</div>
+          <div class="med-list-detail" style="margin-top:3px;">${lastTaken}</div>
+          ${m.notes?`<div class="med-list-detail" style="font-style:italic;">${m.notes}</div>`:''}
+        </div>
+      </div>
+      <div class="med-list-actions">
+        <button class="med-action-btn take" onclick="logMedTaken(${m.id})">✅ Took It</button>
+        <button class="med-action-btn" onclick="deleteMed(${m.id})">🗑️ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════
+// EXERCISES
+// ══════════════════════════════
+function addExercise(){
+  const name=document.getElementById('newExerciseName').value.trim();
+  if(!name){showToast('Please enter an exercise name','var(--orange)');return;}
+  const exercises=loadExercises();
+  exercises.push({id:Date.now(),name,reps:document.getElementById('newExerciseReps').value,done:false});
+  saveExercises(exercises);
+  document.getElementById('newExerciseName').value='';document.getElementById('newExerciseReps').value='';
+  renderExercises();showToast('Exercise added ✓');
+}
+
+function toggleExercise(id){
+  const exercises=loadExercises();const ex=exercises.find(e=>e.id===id);if(ex)ex.done=!ex.done;
+  saveExercises(exercises);renderExercises();
+}
+
+function deleteExercise(id){
+  const exercises=loadExercises().filter(e=>e.id!==id);saveExercises(exercises);renderExercises();
+}
+
+function resetExercises(){
+  const exercises=loadExercises().map(e=>({...e,done:false}));saveExercises(exercises);renderExercises();showToast('Exercises reset ✓');
+}
+
+function saveExerciseLog(){
+  const exercises=loadExercises();const done=exercises.filter(e=>e.done).map(e=>e.name+(e.reps?' ('+e.reps+')':''));
+  if(!done.length){showToast('No exercises checked off','var(--orange)');return;}
+  const entry={id:Date.now(),type:'therapy',timestamp:new Date().toISOString(),
+    therapyTypes:['PT exercises'],duration:'',painBefore:null,painAfter:null,
+    notes:'Completed: '+done.join(', ')};
+  const data=loadEntries();data.unshift(entry);saveEntries(data);
+  showToast('Exercise log saved ✓');
+}
+
+function renderExercises(){
+  const exercises=loadExercises();
+  const el=document.getElementById('exerciseList');if(!el)return;
+  if(!exercises.length){el.innerHTML='<div style="font-size:0.82rem;color:var(--muted);padding:10px 0;">No exercises added yet. Add your PT exercises below.</div>';return;}
+  const done=exercises.filter(e=>e.done).length;
+  el.innerHTML=`<div style="font-size:0.78rem;color:var(--muted);margin-bottom:10px;">${done}/${exercises.length} completed today</div>`+
+    exercises.map(e=>`<div class="exercise-item">
+      <div class="exercise-check ${e.done?'done':''}" onclick="toggleExercise(${e.id})">${e.done?'✓':''}</div>
+      <div class="exercise-name">${e.name}</div>
+      ${e.reps?`<div class="exercise-reps">${e.reps}</div>`:''}
+      <button class="exercise-delete" onclick="deleteExercise(${e.id})">✕</button>
+    </div>`).join('');
+}
+
+// ══════════════════════════════
+// PSORIASIS FLARES
+// ══════════════════════════════
+function updateFlareStatus(id){
+  const newStatus=prompt('Update status:\n1. Getting better\n2. No change\n3. Getting worse\n4. Cleared up\n\nEnter number:');
+  const statMap={'1':'better','2':'same','3':'worse','4':'cleared'};
+  const statusVal=statMap[newStatus?.trim()];if(!statusVal)return;
+  const statusLabel={'better':'📈 Getting better','same':'➡️ No change','worse':'📉 Getting worse','cleared':'✅ Cleared up'}[statusVal];
+  const data=loadEntries();const entry=data.find(e=>e.id===id);
+  if(entry){
+    entry.status=statusVal;
+    if(!entry.updates)entry.updates=[];
+    entry.updates.push({timestamp:new Date().toISOString(),status:statusVal});
+    saveEntries(data);renderActiveFlares();
+    showToast('Flare status updated to: '+statusLabel);
+  }
+}
+
+function renderActiveFlares(){
+  const data=loadEntries();
+  const flares=data.filter(e=>e.type==='psoriasis'&&e.status!=='cleared').slice(0,10);
+  const el=document.getElementById('activeFlaresDisplay');
+  const noEl=document.getElementById('noFlares');
+  if(!flares.length){el.innerHTML='';noEl.style.display='block';return;}
+  noEl.style.display='none';
+  const statusColor={'better':'var(--green-light)','same':'var(--gold)','worse':'var(--spike)','cleared':'var(--green-light)'};
+  const statusLabel={'better':'📈 Getting better','same':'➡️ No change','worse':'📉 Getting worse','cleared':'✅ Cleared up'};
+  el.innerHTML=flares.map(f=>`<div class="flare-card">
+    <div class="flare-card-top">
+      <div>
+        <div class="flare-card-name">📍 ${f.location}</div>
+        <div class="flare-card-date">Started: ${new Date(f.timestamp).toLocaleDateString()}</div>
+        ${f.severity?`<div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Severity: ${f.severity}</div>`:''}
+        ${f.triggers?.length?`<div style="font-size:0.78rem;color:var(--muted);">Triggers: ${f.triggers.join(', ')}</div>`:''}
+        ${f.treatments?.length?`<div style="font-size:0.78rem;color:var(--muted);">Treating with: ${f.treatments.join(', ')}</div>`:''}
+      </div>
+      <div class="flare-card-status" style="border-color:${statusColor[f.status]||'var(--border)'};color:${statusColor[f.status]||'var(--muted)'};">${statusLabel[f.status]||'No status'}</div>
+    </div>
+    ${f.notes?`<div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-top:6px;">"${f.notes}"</div>`:''}
+    <button class="flare-update-btn" onclick="updateFlareStatus(${f.id})">📝 Update Status</button>
+  </div>`).join('');
+}
+
+// ══════════════════════════════
+// HISTORY
+// ══════════════════════════════
+function renderHistory(filter){
+  currentHistoryFilter=filter;
+  const list=document.getElementById('historyList');
+  let data=loadEntries();
+  if(filter!=='all')data=data.filter(e=>e.type===filter);
+  data.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  if(!data.length){list.innerHTML='<div class="empty-state"><div class="icon">📭</div>No entries yet</div>';return;}
+  list.innerHTML=data.map(e=>buildHistoryEntry(e)).join('');
+}
+
+function buildHistoryEntry(e){
+  const time=new Date(e.timestamp).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  let typeLabel='',main='',detail='',cls=e.type;
+  switch(e.type){
+    case'pain':
+      typeLabel='🩸 Pain Log';
+      main=(e.painLevel?'Level: '+e.painLevel+'/10':'Pain logged')+(e.mood?' · '+e.mood:'');
+      detail=[e.locations?.join(', '),e.symptoms?.join(', '),e.activity].filter(Boolean).join(' | ');break;
+    case'hr':
+      typeLabel='❤️ Heart Rate';cls=e.isSpike?'hr spike':'hr';
+      main=e.bpm+' BPM'+(e.isSpike?' 🚩 SPIKE':'');
+      detail=[e.activity,e.exertion].filter(Boolean).join(' · ');break;
+    case'symptom':
+      typeLabel='🔍 Symptoms';cls='symptom';
+      main=e.symptoms?.join(', ')||'Symptoms';
+      detail=[e.severity,e.duration].filter(Boolean).join(' · ');break;
+    case'medlog':
+      typeLabel='💊 Med Taken';cls='medlog';
+      main=e.medName+(e.dosage?' — '+e.dosage:'');break;
+    case'painmed':
+      typeLabel='⚠️ Pain Med';cls='painmed';
+      main=e.medName+(e.dosage?' — '+e.dosage:'');
+      detail=[e.helped,e.relief].filter(Boolean).join(' · ');break;
+    case'medreaction':
+      typeLabel='🚨 Med Reaction';cls='medreaction';
+      main=e.medName+(e.dosage?' — '+e.dosage:'');
+      detail=e.reactions?.join(', ')+(e.severity?' · '+e.severity:'');break;
+    case'therapy':
+      typeLabel='🛁 Therapy';cls='therapy';
+      main=e.therapyTypes?.join(', ')+'';
+      detail=(e.duration?e.duration+' min':'')+
+        (e.painBefore&&e.painAfter?' · Pain: '+e.painBefore+'→'+e.painAfter:'');break;
+    case'food':
+      typeLabel='🍽️ Food Log';cls='food';
+      main=e.food?.substring(0,60)+(e.food?.length>60?'...':'');
+      detail=[e.meal,e.symptoms?.length&&e.symptoms[0]!=='None'?'Reaction: '+e.symptoms.join(', '):''].filter(Boolean).join(' · ');break;
+    case'psoriasis':
+      typeLabel='🔴 Psoriasis';cls='psoriasis';
+      main='Flare: '+e.location+(e.severity?' — '+e.severity:'');
+      detail=[e.triggers?.join(', '),e.status].filter(Boolean).join(' · ');break;
+  }
+  return`<div class="history-entry ${cls}">
+    <div class="entry-header">
+      <span class="entry-type">${typeLabel}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="entry-time">${time}</span>
+        <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
+      </span>
+    </div>
+    <div class="entry-main">${main}</div>
+    ${detail?`<div class="entry-detail">${detail}</div>`:''}
+    ${e.notes?`<div class="entry-detail" style="font-style:italic;margin-top:4px;">"${e.notes}"</div>`:''}
+    ${e.voiceNote?`<div class="entry-detail" style="margin-top:4px;">🎙️ ${e.voiceNote}</div>`:''}
+  </div>`;
+}
+
+function filterHistory(filter,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderHistory(filter);
+}
+
+function deleteEntry(id){
+  const data=loadEntries().filter(e=>e.id!==id);saveEntries(data);renderHistory(currentHistoryFilter);showToast('Entry deleted');
+}
+
+// ══════════════════════════════
+// TRENDS
+// ══════════════════════════════
+function renderTrends(){
+  const data=loadEntries();
+  const el=document.getElementById('trendsContent');
+  if(!data.length){el.innerHTML='<div class="empty-state"><div class="icon">📈</div>Log some entries to see trends</div>';return;}
+
+  const pain=data.filter(e=>e.type==='pain'&&e.painLevel);
+  const hr=data.filter(e=>e.type==='hr');
+  const symptoms=data.filter(e=>e.type==='symptom');
+  const food=data.filter(e=>e.type==='food'&&e.symptoms?.length&&!e.symptoms.includes('None'));
+  const spikes=hr.filter(e=>e.isSpike);
+  const avgPain=pain.length?(pain.reduce((s,e)=>s+e.painLevel,0)/pain.length).toFixed(1):'—';
+  const maxPain=pain.length?Math.max(...pain.map(e=>e.painLevel)):'—';
+  const avgBPM=hr.length?(hr.reduce((s,e)=>s+e.bpm,0)/hr.length).toFixed(0):'—';
+
+  // Pain chart — last 10 entries
+  const last10pain=pain.slice(0,10).reverse();
+  const painBars=last10pain.map(e=>{
+    const h=Math.max(4,Math.round((e.painLevel/10)*70));
+    const col=e.painLevel<=3?'var(--green)':e.painLevel<=6?'var(--orange)':'var(--red)';
+    const d=new Date(e.timestamp);const label=(d.getMonth()+1)+'/'+d.getDate();
+    return`<div class="chart-bar" style="height:${h}px;background:${col};flex:1;">
+      <div class="chart-bar-val">${e.painLevel}</div>
+      <div class="chart-bar-label">${label}</div>
+    </div>`;
+  }).join('');
+
+  // BPM chart — last 10
+  const last10hr=hr.slice(0,10).reverse();
+  const bpmBars=last10hr.map(e=>{
+    const maxBPM=Math.max(...hr.map(x=>x.bpm),150);
+    const h=Math.max(4,Math.round((e.bpm/maxBPM)*70));
+    const col=e.isSpike?'var(--spike)':'var(--blue)';
+    const d=new Date(e.timestamp);const label=(d.getMonth()+1)+'/'+d.getDate();
+    return`<div class="chart-bar" style="height:${h}px;background:${col};flex:1;">
+      <div class="chart-bar-val">${e.bpm}</div>
+      <div class="chart-bar-label">${label}</div>
+    </div>`;
+  }).join('');
+
+  // Symptom frequency
+  const symCount={};
+  [...symptoms,...data.filter(e=>e.type==='pain')].forEach(e=>{
+    (e.symptoms||[]).forEach(s=>{if(s)symCount[s]=(symCount[s]||0)+1;});
+  });
+  const sortedSyms=Object.entries(symCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxSym=sortedSyms[0]?.[1]||1;
+  const symBars=sortedSyms.map(([name,count])=>`<div class="freq-row">
+    <div class="freq-name">${name}</div>
+    <div class="freq-bar-wrap"><div class="freq-bar-fill" style="width:${(count/maxSym*100).toFixed(0)}%;background:var(--purple);"></div></div>
+    <div class="freq-count">${count}x</div>
+  </div>`).join('');
+
+  // Food reactions
+  const foodBad=food.slice(0,5);
+  const foodRows=foodBad.length?foodBad.map(e=>`<div class="freq-row">
+    <div class="freq-name" style="width:160px;">${e.food?.substring(0,20)||'Food'}</div>
+    <div class="freq-count" style="color:var(--orange);">${e.symptoms?.join(', ').substring(0,30)||''}</div>
+  </div>`).join(''):'<div style="font-size:0.8rem;color:var(--muted);">No food reactions logged yet</div>';
+
+  el.innerHTML=`
+  <div class="trend-card">
+    <div class="trend-title">📊 Overall Stats</div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val ${avgPain==='—'?'':avgPain<=4?'good':avgPain<=7?'warn':'bad'}">${avgPain}</div><div class="stat-label">Avg Pain</div></div>
+      <div class="stat-box"><div class="stat-val ${maxPain==='—'?'':maxPain<=4?'good':maxPain<=7?'warn':'bad'}">${maxPain}</div><div class="stat-label">Peak Pain</div></div>
+      <div class="stat-box"><div class="stat-val ${spikes.length===0?'good':spikes.length<3?'warn':'bad'}">${spikes.length}</div><div class="stat-label">HR Spikes</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-val">${pain.length}</div><div class="stat-label">Pain Logs</div></div>
+      <div class="stat-box"><div class="stat-val">${avgBPM}</div><div class="stat-label">Avg BPM</div></div>
+      <div class="stat-box"><div class="stat-val">${food.length}</div><div class="stat-label">Food Reactions</div></div>
+    </div>
+  </div>
+  ${last10pain.length?`<div class="trend-card">
+    <div class="trend-title">🩸 Pain Levels (last ${last10pain.length} entries)</div>
+    <div class="simple-chart">${painBars}</div>
+  </div>`:''}
+  ${last10hr.length?`<div class="trend-card">
+    <div class="trend-title">❤️ Heart Rate (last ${last10hr.length} entries)</div>
+    <div class="simple-chart">${bpmBars}</div>
+  </div>`:''}
+  ${sortedSyms.length?`<div class="trend-card">
+    <div class="trend-title">🔍 Most Frequent Symptoms</div>
+    <div class="symptom-freq">${symBars}</div>
+  </div>`:''}
+  <div class="trend-card">
+    <div class="trend-title">🍽️ Recent Food Reactions</div>
+    ${foodRows}
+  </div>`;
+}
+
+// ══════════════════════════════
+// EXPORT
+// ══════════════════════════════
+function generateExport(){
+  const range=document.getElementById('exportRange').value;
+  let data=loadEntries();
+  if(range!=='all'){const d=parseInt(range);const c=new Date();c.setDate(c.getDate()-d);data=data.filter(e=>new Date(e.timestamp)>=c);}
+  data.sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const meds=loadMeds();
+  if(!data.length&&!meds.length){document.getElementById('exportPreview').textContent='No entries in selected range.';return;}
+  const rangeLabel=range==='all'?'All recorded entries':'Last '+range+' days';
+  let r='HEALTH TRACKER REPORT\n';
+  r+=`Generated: ${new Date().toLocaleString()}\nDate Range: ${rangeLabel}\nTotal Entries: ${data.length}\n${'─'.repeat(40)}\n\n`;
+
+  if(meds.length){
+    r+=`CURRENT MEDICATIONS\n${'─'.repeat(30)}\n`;
+    meds.forEach(m=>{r+=`• ${m.name}${m.dose?' — '+m.dose:''}${m.times?' | Schedule: '+m.times:''}${m.notes?' | '+m.notes:''}\n`;});
+    r+='\n';
+  }
+
+  const sections={
+    pain:{label:'PAIN LOG',color:''},hr:{label:'HEART RATE LOG'},
+    symptom:{label:'SYMPTOM LOG'},painmed:{label:'PAIN MEDICATION LOG'},
+    medreaction:{label:'MEDICATION REACTIONS'},therapy:{label:'THERAPY SESSIONS'},
+    food:{label:'FOOD LOG'},psoriasis:{label:'PSORIASIS FLARES'},medlog:{label:'MEDICATIONS TAKEN'}
+  };
+  Object.entries(sections).forEach(([type,{label}])=>{
+    const entries=data.filter(e=>e.type===type);if(!entries.length)return;
+    r+=`${label} (${entries.length} entries)\n${'─'.repeat(30)}\n`;
+    entries.forEach(e=>{
+      r+=`[${new Date(e.timestamp).toLocaleString()}]\n`;
+      if(e.painLevel)r+=`  Pain Level: ${e.painLevel}/10\n`;
+      if(e.locations?.length)r+=`  Location: ${e.locations.join(', ')}\n`;
+      if(e.bpm)r+=`  BPM: ${e.bpm}${e.isSpike?' ⚠️ SPIKE':''}\n`;
+      if(e.activity)r+=`  Activity: ${e.activity}\n`;
+      if(e.exertion)r+=`  Exertion: ${e.exertion}\n`;
+      if(e.symptoms?.length)r+=`  Symptoms: ${e.symptoms.join(', ')}\n`;
+      if(e.severity)r+=`  Severity: ${e.severity}\n`;
+      if(e.medName)r+=`  Medication: ${e.medName}${e.dosage?' — '+e.dosage:''}\n`;
+      if(e.reactions?.length)r+=`  Reactions: ${e.reactions.join(', ')}\n`;
+      if(e.reasons?.length)r+=`  Reason: ${e.reasons.join(', ')}\n`;
+      if(e.helped)r+=`  Effectiveness: ${e.helped}\n`;
+      if(e.painBefore&&e.painAfter)r+=`  Pain before/after: ${e.painBefore}→${e.painAfter}\n`;
+      if(e.relief)r+=`  Time to relief: ${e.relief}\n`;
+      if(e.sideEffects?.length)r+=`  Side effects: ${e.sideEffects.join(', ')}\n`;
+      if(e.therapyTypes?.length)r+=`  Therapy: ${e.therapyTypes.join(', ')}\n`;
+      if(e.duration)r+=`  Duration: ${e.duration} min\n`;
+      if(e.food)r+=`  Food: ${e.food}\n`;
+      if(e.meal)r+=`  Meal: ${e.meal}\n`;
+      if(e.reaction)r+=`  Reaction severity: ${e.reaction}\n`;
+      if(e.location)r+=`  Flare location: ${e.location}\n`;
+      if(e.triggers?.length)r+=`  Triggers: ${e.triggers.join(', ')}\n`;
+      if(e.treatments?.length)r+=`  Treatments: ${e.treatments.join(', ')}\n`;
+      if(e.status)r+=`  Status: ${e.status}\n`;
+      if(e.mood)r+=`  Mood: ${e.mood}\n`;
+      if(e.notes)r+=`  Notes: ${e.notes}\n`;
+      if(e.voiceNote)r+=`  Voice note: ${e.voiceNote}\n`;
+      r+='\n';
+    });
+  });
+  r+='─'.repeat(40)+'\nEnd of Report';
+  document.getElementById('exportPreview').textContent=r;
+}
+
+function copyExport(){
+  navigator.clipboard.writeText(document.getElementById('exportPreview').textContent).then(()=>showToast('Copied to clipboard ✓'));
+}
+
+// ══════════════════════════════
+// INIT
+// ══════════════════════════════
+const now=new Date().toISOString().slice(0,16);
+['pain','hr','symptom','pm','mr','therapy','food','psori'].forEach(p=>{
+  const el=document.getElementById(p+'BackdateTime');if(el)el.value=now;
+});
+
+// ══════════════════════════════
+// PWA
+// ══════════════════════════════
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();deferredPrompt=e;
+  const banner=document.getElementById('installBanner');
+  if(banner)banner.style.display='flex';
+});
+function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{
+      deferredPrompt=null;
+      document.getElementById('installBanner').style.display='none';
+    });
+  }
+}
+window.addEventListener('appinstalled',()=>{
+  showToast('App installed! 🎉');
+  document.getElementById('installBanner').style.display='none';
+});
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
+<script>
+// ══════════════════════════════
+// MED REMINDERS
+// ══════════════════════════════
+function parseTimeTo24(timeStr){
+  if(!timeStr)return null;
+  timeStr=timeStr.trim().toLowerCase().replace(/\s/g,'');
+  let h,m=0;
+  const ampm=timeStr.match(/(am|pm)$/);
+  const digits=timeStr.replace(/(am|pm)/,'');
+  if(digits.includes(':')){const parts=digits.split(':');h=parseInt(parts[0]);m=parseInt(parts[1]);}
+  else{h=parseInt(digits);}
+  if(isNaN(h))return null;
+  if(ampm){if(ampm[1]==='pm'&&h!==12)h+=12;if(ampm[1]==='am'&&h===12)h=0;}
+  return{h,m};
+}
+
+async function requestNotificationPermission(){
+  if(!('Notification'in window)){showToast('Notifications not supported','var(--orange)');return false;}
+  if(Notification.permission==='granted')return true;
+  const result=await Notification.requestPermission();
+  if(result==='granted'){showToast('Reminders enabled! 🔔');return true;}
+  showToast('Permission denied — enable in browser settings','var(--orange)');return false;
+}
+
+function scheduleMedReminders(){
+  const existing=window._medIntervals||[];
+  existing.forEach(id=>clearInterval(id));
+  window._medIntervals=[];
+  const meds=loadMeds();
+  meds.forEach(med=>{
+    if(!med.times||!med.reminderEnabled)return;
+    const times=med.times.split(',').map(t=>t.trim());
+    times.forEach(timeStr=>{
+      const parsed=parseTimeTo24(timeStr);
+      if(!parsed)return;
+      const id=setInterval(()=>{
+        const n=new Date();
+        if(n.getHours()===parsed.h&&n.getMinutes()===parsed.m){
+          fireReminder(med);
+        }
+      },60000);
+      window._medIntervals.push(id);
+    });
+  });
+}
+
+function fireReminder(med){
+  if(med.takenTimes&&med.takenTimes.length){
+    const last=new Date(med.takenTimes[med.takenTimes.length-1]);
+    if((Date.now()-last.getTime())/60000<30)return;
+  }
+  if(Notification.permission==='granted'){
+    const n=new Notification('💊 Medication Reminder',{
+      body:`Time to take ${med.name}${med.dose?' ('+med.dose+')':''}`,
+      icon:'icon-192.png',tag:'med-'+med.id,renotify:true,requireInteraction:true
+    });
+    n.onclick=()=>{window.focus();n.close();};
+  }
+}
+
+function toggleMedReminder(id){
+  const meds=loadMeds();
+  const med=meds.find(m=>m.id===id);
+  if(!med)return;
+  if(!med.reminderEnabled){
+    requestNotificationPermission().then(granted=>{
+      if(granted){
+        med.reminderEnabled=true;saveMeds(meds);scheduleMedReminders();
+        renderMedList();showToast('Reminder set for '+med.name+' 🔔');
+      }
+    });
+  }else{
+    med.reminderEnabled=false;saveMeds(meds);scheduleMedReminders();
+    renderMedList();showToast('Reminder removed for '+med.name);
+  }
+}
+
+// Override renderMedList to include reminder button
+renderMedList=function(){
+  const meds=loadMeds();
+  const el=document.getElementById('medListDisplay');
+  if(!meds.length){el.innerHTML='<div class="empty-state"><div class="icon">💊</div>No medications added yet</div>';return;}
+  el.innerHTML=meds.map(m=>{
+    const lastTaken=m.takenTimes&&m.takenTimes.length
+      ?'Last taken: '+new Date(m.takenTimes[m.takenTimes.length-1]).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})
+      :'Not yet logged today';
+    const on=m.reminderEnabled&&m.times;
+    return`<div class="med-list-item">
+      <div class="med-list-top">
+        <div class="med-list-info">
+          <div class="med-list-name">${m.name}${m.dose?' — '+m.dose:''}</div>
+          <div class="med-list-detail">${m.times?'⏰ '+m.times:''}</div>
+          <div class="med-list-detail" style="margin-top:3px;">${lastTaken}</div>
+          ${m.notes?`<div class="med-list-detail" style="font-style:italic;">${m.notes}</div>`:''}
+          ${on?`<div style="font-size:0.72rem;color:var(--green-light);margin-top:4px;">🔔 Reminders active</div>`:''}
+        </div>
+      </div>
+      <div class="med-list-actions">
+        <button class="med-action-btn take" onclick="logMedTaken(${m.id})">✅ Took It</button>
+        ${m.times?`<button class="med-action-btn" style="${on?'border-color:var(--green);color:var(--green-light);':''}" onclick="toggleMedReminder(${m.id})">${on?'🔔 On':'🔕 Remind Me'}</button>`:''}
+        <button class="med-action-btn" onclick="deleteMed(${m.id})">🗑️ Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// Start reminders on load if already permitted
+if(Notification.permission==='granted')scheduleMedReminders();
+</script>

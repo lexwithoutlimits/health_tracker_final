@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lex's Health Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #110d14;
+  --surface: #1c1520;
+  --card: #261d2b;
+  --border: #3d2d47;
+  --burgundy: #8b2a42;
+  --rose: #c4556a;
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --cream: #f0e6d3;
+  --muted: #8a7a88;
+  --green: #4a7c59;
+  --green-light: #6aaa7a;
+  --orange: #c87941;
+  --blue: #3a6a8b;
+  --purple: #6b3a8b;
+  --red: #a03030;
+  --spike: #e05050;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* HEADER */
+header {
+  background: linear-gradient(135deg, #2a1530, #110d14);
+  border-bottom: 2px solid var(--burgundy);
+  padding: 14px 16px 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+}
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+}
+header h1 span { color: var(--gold); font-style: italic; }
+.header-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+/* TAB BAR */
+.tab-bar {
+  display: flex;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: 64px;
+  z-index: 99;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 0 0 auto;
+  padding: 11px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.tab-btn.active { color: var(--cream); border-bottom-color: var(--burgundy); }
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; }
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  color: var(--gold);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* FORM ELEMENTS */
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+label:first-of-type { margin-top: 0; }
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--burgundy); }
+select option { background: var(--card); }
+textarea { resize: vertical; min-height: 70px; }
+
+/* PAIN SCALE */
+.pain-scale {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.pain-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--cream);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.pain-btn.selected { background: var(--burgundy); border-color: var(--rose); }
+.pain-btn:nth-child(1), .pain-btn:nth-child(2), .pain-btn:nth-child(3) { border-color: var(--green); }
+.pain-btn:nth-child(4), .pain-btn:nth-child(5), .pain-btn:nth-child(6) { border-color: var(--orange); }
+.pain-btn:nth-child(7), .pain-btn:nth-child(8) { border-color: #c87941; }
+.pain-btn:nth-child(9), .pain-btn:nth-child(10) { border-color: var(--red); }
+
+/* CHIP SELECTS */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+}
+.chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.chip.selected {
+  background: var(--burgundy);
+  border-color: var(--rose);
+  color: var(--cream);
+}
+
+/* BODY MAP */
+.body-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.body-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.body-section-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 7px;
+}
+.lr-buttons {
+  display: flex;
+  gap: 5px;
+}
+.lr-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.lr-btn.selected {
+  background: var(--burgundy);
+  border-color: var(--rose);
+  color: var(--cream);
+}
+
+/* MOOD */
+.mood-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.mood-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.mood-btn.selected {
+  background: var(--card);
+  border-color: var(--gold);
+}
+.mood-label {
+  display: block;
+  font-size: 0.6rem;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* VOICE NOTE */
+.voice-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.voice-btn.recording {
+  border-color: var(--rose);
+  color: var(--rose);
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+.voice-transcript {
+  margin-top: 8px;
+  padding: 10px;
+  background: var(--surface);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: var(--cream);
+  display: none;
+  border: 1px solid var(--border);
+}
+
+/* SUBMIT BUTTON */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--burgundy);
+  color: var(--cream);
+  border: none;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 4px;
+  letter-spacing: 0.03em;
+}
+.submit-btn:hover { background: var(--rose); }
+
+/* HEART RATE */
+.bpm-display {
+  text-align: center;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+.bpm-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  color: var(--cream);
+  line-height: 1;
+}
+.bpm-number.spike { color: var(--spike); }
+.bpm-unit { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.spike-warning {
+  background: rgba(224, 80, 80, 0.15);
+  border: 1px solid var(--spike);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--spike);
+  margin-top: 8px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+.threshold-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.threshold-row input { flex: 1; }
+.threshold-label { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+/* HISTORY */
+.history-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.filter-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.filter-btn.active {
+  background: var(--burgundy);
+  border-color: var(--rose);
+  color: var(--cream);
+}
+
+.history-entry {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--burgundy);
+}
+.history-entry.heart-rate { border-left-color: var(--blue); }
+.history-entry.symptom { border-left-color: var(--purple); }
+.history-entry.medication { border-left-color: var(--orange); }
+.history-entry.spike { border-left-color: var(--spike); }
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.entry-type {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.entry-time { font-size: 0.72rem; color: var(--muted); }
+.entry-main { font-size: 0.88rem; color: var(--cream); margin-bottom: 4px; }
+.entry-detail { font-size: 0.78rem; color: var(--muted); }
+.entry-delete {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.entry-delete:hover { color: var(--red); }
+
+/* DOCTOR EXPORT */
+.export-preview {
+  background: #1a1a1a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #ddd;
+  white-space: pre-wrap;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 12px;
+}
+.export-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+.export-copy { background: var(--burgundy); color: var(--cream); }
+.export-copy:hover { background: var(--rose); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.empty-state .icon { font-size: 2rem; margin-bottom: 10px; }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--green);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* BACKDATED TOGGLE */
+.backdate-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.backdate-toggle input { width: auto; }
+.backdate-field { display: none; margin-top: 8px; }
+.backdate-field.visible { display: block; }
+
+/* SECTION DIVIDER */
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Lex's <span>Health</span> Tracker</h1>
+  <div class="header-sub">Your data. Your patterns. Your power.</div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('pain')">🩸 Pain Log</button>
+  <button class="tab-btn" onclick="showTab('heartrate')">❤️ Heart Rate</button>
+  <button class="tab-btn" onclick="showTab('symptoms')">🔍 Symptoms</button>
+  <button class="tab-btn" onclick="showTab('medication')">💊 Med Reaction</button>
+  <button class="tab-btn" onclick="showTab('history')">📋 History</button>
+  <button class="tab-btn" onclick="showTab('export')">📄 Doctor Export</button>
+</div>
+
+<!-- PAIN LOG TAB -->
+<div id="tab-pain" class="tab-panel active">
+  <div class="card">
+    <div class="card-title">🩸 Pain Log Entry</div>
+
+    <label>Pain Scale (1–10)</label>
+    <div class="pain-scale" id="painScale">
+      <button class="pain-btn" onclick="selectPain(this,1)">1</button>
+      <button class="pain-btn" onclick="selectPain(this,2)">2</button>
+      <button class="pain-btn" onclick="selectPain(this,3)">3</button>
+      <button class="pain-btn" onclick="selectPain(this,4)">4</button>
+      <button class="pain-btn" onclick="selectPain(this,5)">5</button>
+      <button class="pain-btn" onclick="selectPain(this,6)">6</button>
+      <button class="pain-btn" onclick="selectPain(this,7)">7</button>
+      <button class="pain-btn" onclick="selectPain(this,8)">8</button>
+      <button class="pain-btn" onclick="selectPain(this,9)">9</button>
+      <button class="pain-btn" onclick="selectPain(this,10)">10</button>
+    </div>
+
+    <label>Body Location</label>
+    <div class="body-sections" id="bodyMap">
+      <div class="body-section">
+        <div class="body-section-name">Head / Neck</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'head','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'head','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'head','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Shoulder</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'shoulder','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'shoulder','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'shoulder','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Chest</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'chest','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'chest','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'chest','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Upper Back</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'upperback','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'upperback','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'upperback','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Abdomen</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'abdomen','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'abdomen','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'abdomen','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Lower Back</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'lowerback','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'lowerback','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'lowerback','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Hip / Pelvis</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'hip','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'hip','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'hip','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Knee</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'knee','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'knee','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'knee','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Foot / Ankle</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'foot','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'foot','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'foot','R')">R</button>
+        </div>
+      </div>
+      <div class="body-section">
+        <div class="body-section-name">Hand / Wrist</div>
+        <div class="lr-buttons">
+          <button class="lr-btn" onclick="toggleLR(this,'hand','L')">L</button>
+          <button class="lr-btn" onclick="toggleLR(this,'hand','C')">C</button>
+          <button class="lr-btn" onclick="toggleLR(this,'hand','R')">R</button>
+        </div>
+      </div>
+    </div>
+
+    <label>Symptom Types</label>
+    <div class="chips" id="painSymptoms">
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Joint pain</button>
+      <button class="chip" onclick="toggleChip(this)">Muscle pain</button>
+      <button class="chip" onclick="toggleChip(this)">Numbness/tingling</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="painSymptomsCustom" placeholder="Other symptoms..." style="margin-top:8px;">
+
+    <label>Activity at Time of Pain</label>
+    <select id="painActivity">
+      <option value="">Select activity...</option>
+      <option>Resting</option>
+      <option>Sitting</option>
+      <option>Standing</option>
+      <option>Walking</option>
+      <option>Household tasks</option>
+      <option>PT exercises</option>
+      <option>Climbing stairs</option>
+      <option>Driving</option>
+      <option>Sleeping / waking</option>
+      <option>Other</option>
+    </select>
+
+    <label>Mood</label>
+    <div class="mood-row" id="moodRow">
+      <button class="mood-btn" onclick="selectMood(this,'😊')">😊<span class="mood-label">Good</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😐')">😐<span class="mood-label">Okay</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😔')">😔<span class="mood-label">Low</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😤')">😤<span class="mood-label">Frustrated</span></button>
+      <button class="mood-btn" onclick="selectMood(this,'😰')">😰<span class="mood-label">Anxious</span></button>
+    </div>
+
+    <label>Voice Note</label>
+    <button class="voice-btn" id="painVoiceBtn" onclick="toggleVoice('pain')">🎙️ Tap to Record</button>
+    <div class="voice-transcript" id="painTranscript"></div>
+
+    <label>Notes</label>
+    <textarea id="painNotes" placeholder="Any additional details..."></textarea>
+
+    <label class="backdate-toggle">
+      <input type="checkbox" id="painBackdate" onchange="toggleBackdate('pain')"> Log for a past date/time
+    </label>
+    <div class="backdate-field" id="painBackdateField">
+      <input type="datetime-local" id="painBackdateTime">
+    </div>
+
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="savePain()">💾 Save Pain Entry</button>
+  </div>
+</div>
+
+<!-- HEART RATE TAB -->
+<div id="tab-heartrate" class="tab-panel">
+  <div class="card">
+    <div class="card-title">❤️ Heart Rate Entry</div>
+
+    <label>BPM Reading</label>
+    <div class="bpm-display">
+      <div class="bpm-number" id="bpmDisplay">—</div>
+      <div class="bpm-unit">beats per minute</div>
+      <div class="spike-warning" id="spikeWarning">🚩 Spike detected — above threshold</div>
+    </div>
+    <input type="number" id="bpmInput" placeholder="Enter BPM from your watch..." min="30" max="250" oninput="updateBPMDisplay(this.value)">
+
+    <label>Spike Threshold</label>
+    <div class="threshold-row">
+      <input type="number" id="bpmThreshold" value="100" min="60" max="200">
+      <span class="threshold-label">BPM = spike flag</span>
+    </div>
+
+    <label>Activity</label>
+    <select id="hrActivity">
+      <option value="">Select activity...</option>
+      <option>Resting</option>
+      <option>Sitting</option>
+      <option>Standing</option>
+      <option>Walking</option>
+      <option>Household tasks</option>
+      <option>PT exercises</option>
+      <option>Climbing stairs</option>
+      <option>Driving</option>
+      <option>Just woke up</option>
+      <option>Other</option>
+    </select>
+    <input type="text" id="hrActivityCustom" placeholder="Describe activity if Other..." style="margin-top:8px;">
+
+    <label>Exertion Level</label>
+    <div class="chips" id="hrExertion">
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">💤 None</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🚶 Light</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🏃 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'hrExertion')">🔥 Intense</button>
+    </div>
+
+    <label>Notes</label>
+    <textarea id="hrNotes" placeholder="How did you feel? Dizzy, short of breath, etc..."></textarea>
+
+    <label class="backdate-toggle">
+      <input type="checkbox" id="hrBackdate" onchange="toggleBackdate('hr')"> Log for a past date/time
+    </label>
+    <div class="backdate-field" id="hrBackdateField">
+      <input type="datetime-local" id="hrBackdateTime">
+    </div>
+
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveHR()">💾 Save Heart Rate Entry</button>
+  </div>
+</div>
+
+<!-- SYMPTOMS TAB -->
+<div id="tab-symptoms" class="tab-panel">
+  <div class="card">
+    <div class="card-title">🔍 Symptom Log</div>
+
+    <label>Symptoms (select all that apply)</label>
+    <div class="chips" id="symptomChips">
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Fatigue</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Joint pain</button>
+      <button class="chip" onclick="toggleChip(this)">Muscle pain</button>
+      <button class="chip" onclick="toggleChip(this)">Numbness/tingling</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="symptomCustom" placeholder="Other symptoms not listed..." style="margin-top:8px;">
+
+    <label>Severity</label>
+    <div class="chips" id="symptomSeverity">
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😌 Mild</button>
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😣 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'symptomSeverity')">😫 Severe</button>
+    </div>
+
+    <label>How long have you had this?</label>
+    <select id="symptomDuration">
+      <option value="">Select duration...</option>
+      <option>Just started</option>
+      <option>Less than 1 hour</option>
+      <option>1–3 hours</option>
+      <option>Half a day</option>
+      <option>All day</option>
+      <option>Multiple days</option>
+    </select>
+
+    <label>Notes</label>
+    <textarea id="symptomNotes" placeholder="Any triggers, patterns, or context..."></textarea>
+
+    <label class="backdate-toggle">
+      <input type="checkbox" id="symptomBackdate" onchange="toggleBackdate('symptom')"> Log for a past date/time
+    </label>
+    <div class="backdate-field" id="symptomBackdateField">
+      <input type="datetime-local" id="symptomBackdateTime">
+    </div>
+
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveSymptom()">💾 Save Symptom Entry</button>
+  </div>
+</div>
+
+<!-- MEDICATION REACTION TAB -->
+<div id="tab-medication" class="tab-panel">
+  <div class="card">
+    <div class="card-title">💊 Medication Reaction Log</div>
+
+    <label>Medication Name</label>
+    <input type="text" id="medName" placeholder="e.g. Gabapentin, Ibuprofen...">
+
+    <label>Dosage Taken</label>
+    <input type="text" id="medDosage" placeholder="e.g. 300mg, 2 tablets...">
+
+    <label>Reaction Type (select all that apply)</label>
+    <div class="chips" id="medReactionChips">
+      <button class="chip" onclick="toggleChip(this)">Nausea</button>
+      <button class="chip" onclick="toggleChip(this)">Dizziness</button>
+      <button class="chip" onclick="toggleChip(this)">Rash / Hives</button>
+      <button class="chip" onclick="toggleChip(this)">Drowsiness</button>
+      <button class="chip" onclick="toggleChip(this)">Headache</button>
+      <button class="chip" onclick="toggleChip(this)">Heart racing</button>
+      <button class="chip" onclick="toggleChip(this)">Stomach upset</button>
+      <button class="chip" onclick="toggleChip(this)">Brain fog</button>
+      <button class="chip" onclick="toggleChip(this)">Mood change</button>
+      <button class="chip" onclick="toggleChip(this)">Shortness of breath</button>
+    </div>
+    <input type="text" id="medReactionCustom" placeholder="Other reaction not listed..." style="margin-top:8px;">
+
+    <label>Severity</label>
+    <div class="chips" id="medSeverity">
+      <button class="chip" onclick="selectSingle(this,'medSeverity')">😌 Mild</button>
+      <button class="chip" onclick="selectSingle(this,'medSeverity')">😣 Moderate</button>
+      <button class="chip" onclick="selectSingle(this,'medSeverity')">😫 Severe</button>
+    </div>
+
+    <label>Time of Reaction</label>
+    <input type="datetime-local" id="medReactionTime">
+
+    <label>How long after taking medication?</label>
+    <select id="medDelay">
+      <option value="">Select...</option>
+      <option>Immediately</option>
+      <option>Within 15 minutes</option>
+      <option>15–30 minutes</option>
+      <option>30–60 minutes</option>
+      <option>1–2 hours</option>
+      <option>2+ hours</option>
+    </select>
+
+    <label>Notes</label>
+    <textarea id="medNotes" placeholder="Context, what you were doing, how long it lasted..."></textarea>
+
+    <label class="backdate-toggle">
+      <input type="checkbox" id="medBackdate" onchange="toggleBackdate('med')"> Log for a past date/time
+    </label>
+    <div class="backdate-field" id="medBackdateField">
+      <input type="datetime-local" id="medBackdateTime">
+    </div>
+
+    <div class="section-divider"></div>
+    <button class="submit-btn" onclick="saveMed()">💾 Save Medication Reaction</button>
+  </div>
+</div>
+
+<!-- HISTORY TAB -->
+<div id="tab-history" class="tab-panel">
+  <div class="history-filters">
+    <button class="filter-btn active" onclick="filterHistory('all', this)">All</button>
+    <button class="filter-btn" onclick="filterHistory('pain', this)">Pain</button>
+    <button class="filter-btn" onclick="filterHistory('heartrate', this)">Heart Rate</button>
+    <button class="filter-btn" onclick="filterHistory('symptom', this)">Symptoms</button>
+    <button class="filter-btn" onclick="filterHistory('medication', this)">Med Reactions</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- DOCTOR EXPORT TAB -->
+<div id="tab-export" class="tab-panel">
+  <div class="card">
+    <div class="card-title">📄 Doctor Export</div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;">A clean summary of your logged data, ready to copy and share with your healthcare provider.</p>
+
+    <label>Export Date Range</label>
+    <select id="exportRange" onchange="generateExport()">
+      <option value="7">Last 7 days</option>
+      <option value="14">Last 14 days</option>
+      <option value="30" selected>Last 30 days</option>
+      <option value="90">Last 90 days</option>
+      <option value="all">All entries</option>
+    </select>
+
+    <div style="margin-top:14px;">
+      <div class="export-preview" id="exportPreview">Generating report...</div>
+      <button class="export-btn export-copy" onclick="copyExport()">📋 Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let painLevel = null;
+let painMood = null;
+let painLocations = {};
+let voiceRecording = false;
+let recognition = null;
+let currentVoiceTarget = null;
+let voiceTranscripts = { pain: '' };
+
+const STORAGE_KEY = 'lexHealthTrackerV1';
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch { return []; }
+}
+
+function saveData(entries) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+// ── TAB NAVIGATION ──
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'history') renderHistory('all');
+  if (name === 'export') generateExport();
+}
+
+// ── PAIN SCALE ──
+function selectPain(btn, val) {
+  document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  painLevel = val;
+}
+
+// ── BODY MAP ──
+function toggleLR(btn, region, side) {
+  if (btn.classList.contains('selected')) {
+    btn.classList.remove('selected');
+    if (painLocations[region]) {
+      painLocations[region] = painLocations[region].filter(s => s !== side);
+      if (!painLocations[region].length) delete painLocations[region];
+    }
+  } else {
+    btn.classList.add('selected');
+    if (!painLocations[region]) painLocations[region] = [];
+    if (!painLocations[region].includes(side)) painLocations[region].push(side);
+  }
+}
+
+// ── CHIPS ──
+function toggleChip(btn) {
+  btn.classList.toggle('selected');
+}
+
+function selectSingle(btn, groupId) {
+  document.querySelectorAll('#' + groupId + ' .chip').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+// ── MOOD ──
+function selectMood(btn, emoji) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  painMood = emoji;
+}
+
+// ── VOICE NOTE ──
+function toggleVoice(target) {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    showToast('Voice not supported in this browser');
+    return;
+  }
+  if (voiceRecording && currentVoiceTarget === target) {
+    recognition.stop();
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  currentVoiceTarget = target;
+  const btn = document.getElementById(target + 'VoiceBtn');
+  const transcript = document.getElementById(target + 'Transcript');
+  recognition.onstart = () => {
+    voiceRecording = true;
+    btn.classList.add('recording');
+    btn.textContent = '⏹️ Recording... tap to stop';
+    transcript.style.display = 'block';
+  };
+  recognition.onresult = (e) => {
+    let text = '';
+    for (let i = 0; i < e.results.length; i++) text += e.results[i][0].transcript;
+    transcript.textContent = text;
+    voiceTranscripts[target] = text;
+  };
+  recognition.onend = () => {
+    voiceRecording = false;
+    btn.classList.remove('recording');
+    btn.textContent = '🎙️ Tap to Record';
+  };
+  recognition.start();
+}
+
+// ── BPM DISPLAY ──
+function updateBPMDisplay(val) {
+  const display = document.getElementById('bpmDisplay');
+  const warning = document.getElementById('spikeWarning');
+  const threshold = parseInt(document.getElementById('bpmThreshold').value) || 100;
+  if (!val) { display.textContent = '—'; display.classList.remove('spike'); warning.style.display = 'none'; return; }
+  display.textContent = val;
+  if (parseInt(val) >= threshold) {
+    display.classList.add('spike');
+    warning.style.display = 'flex';
+  } else {
+    display.classList.remove('spike');
+    warning.style.display = 'none';
+  }
+}
+
+// ── BACKDATE ──
+function toggleBackdate(prefix) {
+  const cb = document.getElementById(prefix + 'Backdate');
+  const field = document.getElementById(prefix + 'BackdateField');
+  field.classList.toggle('visible', cb.checked);
+}
+
+function getTimestamp(prefix) {
+  const cb = document.getElementById(prefix + 'Backdate');
+  if (cb && cb.checked) {
+    const val = document.getElementById(prefix + 'BackdateTime').value;
+    if (val) return new Date(val).toISOString();
+  }
+  return new Date().toISOString();
+}
+
+// ── SAVE PAIN ──
+function savePain() {
+  const symptoms = [...document.querySelectorAll('#painSymptoms .chip.selected')].map(c => c.textContent);
+  const custom = document.getElementById('painSymptomsCustom').value;
+  if (custom) symptoms.push(custom);
+  const locations = Object.entries(painLocations).map(([r, s]) => r + ' (' + s.join('/') + ')');
+  const entry = {
+    id: Date.now(),
+    type: 'pain',
+    timestamp: getTimestamp('pain'),
+    painLevel,
+    locations,
+    symptoms,
+    activity: document.getElementById('painActivity').value,
+    mood: painMood,
+    voiceNote: voiceTranscripts['pain'] || '',
+    notes: document.getElementById('painNotes').value
+  };
+  const data = loadData();
+  data.unshift(entry);
+  saveData(data);
+  resetPainForm();
+  showToast('Pain entry saved ✓');
+}
+
+function resetPainForm() {
+  document.querySelectorAll('.pain-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('#painSymptoms .chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.lr-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('painSymptomsCustom').value = '';
+  document.getElementById('painActivity').value = '';
+  document.getElementById('painNotes').value = '';
+  document.getElementById('painTranscript').style.display = 'none';
+  document.getElementById('painTranscript').textContent = '';
+  document.getElementById('painBackdate').checked = false;
+  document.getElementById('painBackdateField').classList.remove('visible');
+  painLevel = null; painMood = null; painLocations = {}; voiceTranscripts['pain'] = '';
+}
+
+// ── SAVE HEART RATE ──
+function saveHR() {
+  const bpm = parseInt(document.getElementById('bpmInput').value);
+  if (!bpm) { showToast('Please enter a BPM reading'); return; }
+  const threshold = parseInt(document.getElementById('bpmThreshold').value) || 100;
+  const exertion = document.querySelector('#hrExertion .chip.selected')?.textContent || '';
+  const activity = document.getElementById('hrActivity').value || document.getElementById('hrActivityCustom').value;
+  const entry = {
+    id: Date.now(),
+    type: 'heartrate',
+    timestamp: getTimestamp('hr'),
+    bpm,
+    isSpike: bpm >= threshold,
+    threshold,
+    activity,
+    exertion,
+    notes: document.getElementById('hrNotes').value
+  };
+  const data = loadData();
+  data.unshift(entry);
+  saveData(data);
+  document.getElementById('bpmInput').value = '';
+  document.getElementById('bpmDisplay').textContent = '—';
+  document.getElementById('bpmDisplay').classList.remove('spike');
+  document.getElementById('spikeWarning').style.display = 'none';
+  document.getElementById('hrActivity').value = '';
+  document.getElementById('hrActivityCustom').value = '';
+  document.getElementById('hrNotes').value = '';
+  document.querySelectorAll('#hrExertion .chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('hrBackdate').checked = false;
+  document.getElementById('hrBackdateField').classList.remove('visible');
+  showToast('Heart rate entry saved ✓');
+}
+
+// ── SAVE SYMPTOM ──
+function saveSymptom() {
+  const symptoms = [...document.querySelectorAll('#symptomChips .chip.selected')].map(c => c.textContent);
+  const custom = document.getElementById('symptomCustom').value;
+  if (custom) symptoms.push(custom);
+  if (!symptoms.length) { showToast('Please select at least one symptom'); return; }
+  const severity = document.querySelector('#symptomSeverity .chip.selected')?.textContent || '';
+  const entry = {
+    id: Date.now(),
+    type: 'symptom',
+    timestamp: getTimestamp('symptom'),
+    symptoms,
+    severity,
+    duration: document.getElementById('symptomDuration').value,
+    notes: document.getElementById('symptomNotes').value
+  };
+  const data = loadData();
+  data.unshift(entry);
+  saveData(data);
+  document.querySelectorAll('#symptomChips .chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#symptomSeverity .chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('symptomCustom').value = '';
+  document.getElementById('symptomDuration').value = '';
+  document.getElementById('symptomNotes').value = '';
+  document.getElementById('symptomBackdate').checked = false;
+  document.getElementById('symptomBackdateField').classList.remove('visible');
+  showToast('Symptom entry saved ✓');
+}
+
+// ── SAVE MEDICATION ──
+function saveMed() {
+  const name = document.getElementById('medName').value;
+  if (!name) { showToast('Please enter a medication name'); return; }
+  const reactions = [...document.querySelectorAll('#medReactionChips .chip.selected')].map(c => c.textContent);
+  const custom = document.getElementById('medReactionCustom').value;
+  if (custom) reactions.push(custom);
+  const severity = document.querySelector('#medSeverity .chip.selected')?.textContent || '';
+  const reactionTime = document.getElementById('medReactionTime').value;
+  const entry = {
+    id: Date.now(),
+    type: 'medication',
+    timestamp: getTimestamp('med'),
+    medName: name,
+    dosage: document.getElementById('medDosage').value,
+    reactions,
+    severity,
+    reactionTime: reactionTime ? new Date(reactionTime).toISOString() : '',
+    delay: document.getElementById('medDelay').value,
+    notes: document.getElementById('medNotes').value
+  };
+  const data = loadData();
+  data.unshift(entry);
+  saveData(data);
+  document.getElementById('medName').value = '';
+  document.getElementById('medDosage').value = '';
+  document.getElementById('medReactionCustom').value = '';
+  document.getElementById('medReactionTime').value = '';
+  document.getElementById('medDelay').value = '';
+  document.getElementById('medNotes').value = '';
+  document.querySelectorAll('#medReactionChips .chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#medSeverity .chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('medBackdate').checked = false;
+  document.getElementById('medBackdateField').classList.remove('visible');
+  showToast('Medication reaction saved ✓');
+}
+
+// ── HISTORY ──
+let currentFilter = 'all';
+
+function renderHistory(filter) {
+  currentFilter = filter;
+  const list = document.getElementById('historyList');
+  let data = loadData();
+  if (filter !== 'all') data = data.filter(e => e.type === filter);
+  data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  if (!data.length) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No entries yet</div>';
+    return;
+  }
+  list.innerHTML = data.map(e => renderEntry(e)).join('');
+}
+
+function renderEntry(e) {
+  const time = new Date(e.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  let typeLabel = '', main = '', detail = '', cls = e.type;
+  if (e.type === 'pain') {
+    typeLabel = '🩸 Pain Log';
+    main = e.painLevel ? 'Pain level: ' + e.painLevel + '/10' : 'Pain logged';
+    if (e.mood) main += ' · ' + e.mood;
+    detail = [e.locations?.join(', '), e.symptoms?.join(', '), e.activity].filter(Boolean).join(' | ');
+  } else if (e.type === 'heartrate') {
+    typeLabel = '❤️ Heart Rate';
+    cls = e.isSpike ? 'heart-rate spike' : 'heart-rate';
+    main = e.bpm + ' BPM' + (e.isSpike ? ' 🚩 SPIKE' : '');
+    detail = [e.activity, e.exertion].filter(Boolean).join(' · ');
+  } else if (e.type === 'symptom') {
+    typeLabel = '🔍 Symptoms';
+    cls = 'symptom';
+    main = e.symptoms?.join(', ') || 'Symptoms logged';
+    detail = [e.severity, e.duration].filter(Boolean).join(' · ');
+  } else if (e.type === 'medication') {
+    typeLabel = '💊 Med Reaction';
+    cls = 'medication';
+    main = e.medName + (e.dosage ? ' — ' + e.dosage : '');
+    detail = e.reactions?.join(', ') + (e.severity ? ' · ' + e.severity : '');
+  }
+  return `<div class="history-entry ${cls}">
+    <div class="entry-header">
+      <span class="entry-type">${typeLabel}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="entry-time">${time}</span>
+        <button class="entry-delete" onclick="deleteEntry(${e.id})">✕</button>
+      </span>
+    </div>
+    <div class="entry-main">${main}</div>
+    ${detail ? `<div class="entry-detail">${detail}</div>` : ''}
+    ${e.notes ? `<div class="entry-detail" style="margin-top:4px;font-style:italic;">"${e.notes}"</div>` : ''}
+    ${e.voiceNote ? `<div class="entry-detail" style="margin-top:4px;">🎙️ ${e.voiceNote}</div>` : ''}
+  </div>`;
+}
+
+function deleteEntry(id) {
+  const data = loadData().filter(e => e.id !== id);
+  saveData(data);
+  renderHistory(currentFilter);
+  showToast('Entry deleted');
+}
+
+function filterHistory(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHistory(filter);
+}
+
+// ── DOCTOR EXPORT ──
+function generateExport() {
+  const range = document.getElementById('exportRange').value;
+  let data = loadData();
+  if (range !== 'all') {
+    const days = parseInt(range);
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    data = data.filter(e => new Date(e.timestamp) >= cutoff);
+  }
+  data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  if (!data.length) {
+    document.getElementById('exportPreview').textContent = 'No entries in selected date range.';
+    return;
+  }
+
+  const rangeLabel = range === 'all' ? 'All recorded entries' : `Last ${range} days`;
+  let report = `HEALTH TRACKER REPORT\n`;
+  report += `Generated: ${new Date().toLocaleString()}\n`;
+  report += `Date Range: ${rangeLabel}\n`;
+  report += `Total Entries: ${data.length}\n`;
+  report += `${'─'.repeat(40)}\n\n`;
+
+  const pain = data.filter(e => e.type === 'pain');
+  const hr = data.filter(e => e.type === 'heartrate');
+  const sym = data.filter(e => e.type === 'symptom');
+  const med = data.filter(e => e.type === 'medication');
+
+  if (pain.length) {
+    report += `PAIN LOG (${pain.length} entries)\n${'─'.repeat(30)}\n`;
+    const avg = (pain.reduce((s, e) => s + (e.painLevel || 0), 0) / pain.filter(e => e.painLevel).length).toFixed(1);
+    const max = Math.max(...pain.map(e => e.painLevel || 0));
+    report += `Average Pain Level: ${avg}/10\n`;
+    report += `Highest Pain Level: ${max}/10\n\n`;
+    pain.forEach(e => {
+      report += `[${new Date(e.timestamp).toLocaleString()}]\n`;
+      if (e.painLevel) report += `  Level: ${e.painLevel}/10\n`;
+      if (e.locations?.length) report += `  Location: ${e.locations.join(', ')}\n`;
+      if (e.symptoms?.length) report += `  Symptoms: ${e.symptoms.join(', ')}\n`;
+      if (e.activity) report += `  Activity: ${e.activity}\n`;
+      if (e.mood) report += `  Mood: ${e.mood}\n`;
+      if (e.notes) report += `  Notes: ${e.notes}\n`;
+      if (e.voiceNote) report += `  Voice note: ${e.voiceNote}\n`;
+      report += '\n';
+    });
+  }
+
+  if (hr.length) {
+    report += `HEART RATE LOG (${hr.length} entries)\n${'─'.repeat(30)}\n`;
+    const spikes = hr.filter(e => e.isSpike);
+    const avgBPM = (hr.reduce((s, e) => s + e.bpm, 0) / hr.length).toFixed(0);
+    report += `Average BPM: ${avgBPM}\n`;
+    report += `Spikes Recorded: ${spikes.length}\n\n`;
+    hr.forEach(e => {
+      report += `[${new Date(e.timestamp).toLocaleString()}]\n`;
+      report += `  BPM: ${e.bpm}${e.isSpike ? ' ⚠️ SPIKE' : ''}\n`;
+      if (e.activity) report += `  Activity: ${e.activity}\n`;
+      if (e.exertion) report += `  Exertion: ${e.exertion}\n`;
+      if (e.notes) report += `  Notes: ${e.notes}\n`;
+      report += '\n';
+    });
+  }
+
+  if (sym.length) {
+    report += `SYMPTOM LOG (${sym.length} entries)\n${'─'.repeat(30)}\n`;
+    sym.forEach(e => {
+      report += `[${new Date(e.timestamp).toLocaleString()}]\n`;
+      if (e.symptoms?.length) report += `  Symptoms: ${e.symptoms.join(', ')}\n`;
+      if (e.severity) report += `  Severity: ${e.severity}\n`;
+      if (e.duration) report += `  Duration: ${e.duration}\n`;
+      if (e.notes) report += `  Notes: ${e.notes}\n`;
+      report += '\n';
+    });
+  }
+
+  if (med.length) {
+    report += `MEDICATION REACTIONS (${med.length} entries)\n${'─'.repeat(30)}\n`;
+    med.forEach(e => {
+      report += `[${new Date(e.timestamp).toLocaleString()}]\n`;
+      report += `  Medication: ${e.medName}${e.dosage ? ' — ' + e.dosage : ''}\n`;
+      if (e.reactions?.length) report += `  Reactions: ${e.reactions.join(', ')}\n`;
+      if (e.severity) report += `  Severity: ${e.severity}\n`;
+      if (e.delay) report += `  Onset: ${e.delay}\n`;
+      if (e.notes) report += `  Notes: ${e.notes}\n`;
+      report += '\n';
+    });
+  }
+
+  report += `${'─'.repeat(40)}\nEnd of Report`;
+  document.getElementById('exportPreview').textContent = report;
+}
+
+function copyExport() {
+  const text = document.getElementById('exportPreview').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard ✓'));
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── INIT ──
+document.getElementById('painBackdateTime').value = new Date().toISOString().slice(0,16);
+document.getElementById('hrBackdateTime').value = new Date().toISOString().slice(0,16);
+document.getElementById('symptomBackdateTime').value = new Date().toISOString().slice(0,16);
+document.getElementById('medBackdateTime').value = new Date().toISOString().slice(0,16);
+document.getElementById('medReactionTime').value = new Date().toISOString().slice(0,16);
+</script>
+</body>
+</html>
